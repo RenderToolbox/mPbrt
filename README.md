@@ -69,8 +69,17 @@ AttributeEnd
 Elements and Containers both have the optional properties `name` and `comment`.  When these are provided, the objects will print extra comment lines before any other syntax.
 
 Here is an example of adding a name and comment to a coordinate transform:
+```
+coordXForm = MPbrtElement.transformation('CoordSysTransform', 'camera', ...
+    'name', 'camera-transform', ...
+    'comment', 'Move the coordinate system to match the camera.');
+```
 
-be back soon...
-
+This produces the following PBRT syntax in the output file:
+```
+# camera-transform
+# Move the coordinate system to match the camera.
+CoordSysTransform "camera"   
+```
 
 ### Add, Find, and Delete from a Scene
