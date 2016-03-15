@@ -38,7 +38,7 @@ LightSource "distant"
 ```
 
 ### Containers
-Containers are holders for nested elements.  For example the stuff that goes between `WorldBegin` and `WorldEnd` goes in a "World" container.  Likewise for stuff that goes between `AttributeBegin` and `AttributeEnd`, and other  `Begin`/`End` sections.
+Containers are holders for nested elements.  For example the stuff that goes between `WorldBegin` and `WorldEnd` goes in a "World" container.  Likewise for stuff that goes in `AttributeBegin`/`AttributeEnd` sections, and other  `Begin`/`End` sections.
 
 Here is an example of creating an `AttributeBegin`/`AttributeEnd` section that holds a coordinate transform and a light source:
 ```
