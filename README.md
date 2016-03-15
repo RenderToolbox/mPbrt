@@ -31,14 +31,40 @@ lightSource.setParameter('L', 'rgb', [3 3 3]);
 
 This produces the following PBRT syntax in the output file:
 ```
+LightSource "distant"   
+  "point from" [0 0 0] 
+  "point to" [0 0 1] 
+  "rgb L" [3 3 3] 
+```
+
+### Containers
+Containers are holders for nested elements.  For example the stuff that goes between `WorldBegin` and `WorldEnd` goes in a "World" container.  Likewise for the stuff that goes between `AttributeBegin` and `AttributeEnd`, and similar `Begin`/`End` sections.
+
+Here is an example of creating an `AttributeBegin`/`AttributeEnd` section that holds a coordinate transform and a light source:
+```
+lightAttrib = MPbrtContainer('Attribute');
+scene.world.append(lightAttrib);
+
+coordXForm = MPbrtElement.transformation('CoordSysTransform', 'camera');
+lightAttrib.append(coordXForm);
+
+lightSource = MPbrtElement('LightSource', 'type', 'distant');
+lightSource.setParameter('from', 'point', [0 0 0]);
+lightSource.setParameter('to', 'point', [0 0 1]);
+lightSource.setParameter('L', 'rgb', [3 3 3]);
+lightAttrib.append(lightSource);
+```
+
+This produces the following PBRT syntax in the output file:
+```
+AttributeBegin
+  CoordSysTransform "camera"   
   LightSource "distant"   
     "point from" [0 0 0] 
     "point to" [0 0 1] 
     "rgb L" [3 3 3] 
-```
+AttributeEnd```
 
-### Containers
-Containers are holders for nested elements.  For example the stuff that goes between `WorldBegin` and `WorldEnd` is in a "World" container.  Likewise for the stuff that 
 
 ### Comments
 
