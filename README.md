@@ -6,14 +6,14 @@ The basic idea goes like this:  We want to be able to auto-generate [PBRT](http:
 
 For now we are only going from Matlab to PBRT file.  We are not trying to parse existing PBRT files.
 
-# Getting started.
+# Get Started
 To get started, clone this repository and add it to your Matlab path.
 
 See the example script at [examples/exampleOfAPbrtFile.m](https://github.com/RenderToolbox3/mPbrt/blob/master/examples/exampleOfAPbrtFile.m).  You should be able to run the script right away and produce a PBRT scene file like [this one](https://github.com/RenderToolbox3/mPbrt/blob/master/examples/exampleOfAPbrtFile.pbrt).
 
 The idea of this example script is to reproduce the "official" example scene file from the [pber-v2 file format documentation](http://www.pbrt.org/fileformat.html).
 
-# API
+# The API
 The mPbrt API is based on a Scene, which contains Elements and Containers.  These are written with Matlab's [Object-Oriented Programming](http://www.mathworks.com/help/matlab/object-oriented-programming.html).
 
 In general, you create objects and specify their names, types, values, etc.  Then the objects take care of writing well-formed PBRT statements to a scene file.
