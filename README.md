@@ -93,17 +93,45 @@ All your Elements and Containers should go in a Scene.  The scene has an "overal
 
 The Scene does more than organize you objects.  You can add objects to the Scene, search the Scene for existing objects, and remove objects from the Scene.  In one programmer's very humble opinion, these abilities make mPath more fun (ie better) than a plain PBRT text file!
 
-Here's an example that adds two objects to a scene.
+Here's an example that adds two elements to a scene.
 ```
-todo
+scene = MPbrtScene();
+
+scene.overall.append(MPbrtElement('Camera', 'type', 'perspective'));
+
+lightAttrib = MPbrtContainer('Attribute');
+scene.world.append(lightAttrib);
+lightAttrib.append(MPbrtElement('LightSource', 'type', 'distant', 'name', 'the-light'));
 ```
 
-We can find one of the objects and update it.
+We can find the camera and update it.
 ```
-todo
+camera = scene.overall.find('Camera');
+camera.setParameter('fov', 'float', 30);
 ```
 
-We can removes the other object.
+We can find the light and remove it altogether.
 ```
-todo
+removedlight = scene.world.find('LightSource', 'name', 'the-light', 'remove', true);
+removedLight = 
+  MPbrtElement with properties:
+
+          value: []
+      valueType: ''
+           type: 'distant'
+     parameters: []
+           name: 'the-light'
+     identifier: 'LightSource'
+        comment: ''
+         indent: '  '
+    floatFormat: '%f'
+      intFormat: '%d'
+     scanFormat: '%f'
+```
+
+Once removed, we can no longer find the light.
+```
+shouldBeEmpty = scene.world.find('LightSource', 'name', 'the-light');
+shouldBeEmpty =
+     []
 ```
