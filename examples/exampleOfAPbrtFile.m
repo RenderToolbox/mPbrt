@@ -42,65 +42,65 @@ clc;
 scene = MPbrtScene();
 
 %% Add the content at the "overall" level.
-lookAt = MPbrtElement('LookAt', '', '');
-lookAt.value = [0 10 100   0 -1 0 0 1 0];
-lookAt.valueType = 'raw';
+lookAt = MPbrtElement('LookAt', ...
+    'value', [0 10 100   0 -1 0 0 1 0], ...
+    'valueType', 'raw');
 scene.overall.append(lookAt);
 
-camera = MPbrtElement('Camera', 'perspective', '');
+camera = MPbrtElement('Camera', 'type', 'perspective');
 camera.setParameter('fov', 'float', 30);
 scene.overall.append(camera);
 
-filter = MPbrtElement('PixelFilter', 'mitchell', '');
+filter = MPbrtElement('PixelFilter', 'type', 'mitchell');
 filter.setParameter('xwidth', 'float', 2);
 filter.setParameter('ywidth', 'float', 2);
 scene.overall.append(filter);
 
-sampler = MPbrtElement('Sampler', 'bestcandidate', '');
+sampler = MPbrtElement('Sampler', 'type', 'bestcandidate');
 scene.overall.append(sampler);
 
-film = MPbrtElement('Film', 'image', '');
+film = MPbrtElement('Film', 'type', 'image');
 film.setParameter('filename', 'string', 'simple.exr');
 film.setParameter('xresolution', 'integer', 200);
 film.setParameter('yresolution', 'integer', 200);
 scene.overall.append(film);
 
 %% Add a light to the world.
-lightAttrib = MPbrtContainer('Attribute', '');
+lightAttrib = MPbrtContainer('Attribute');
 scene.world.append(lightAttrib);
 
-coordXForm = MPbrtElement('CoordSysTransform', '', '');
-coordXForm.value = 'camera';
+coordXForm = MPbrtElement('CoordSysTransform', 'value', 'camera');
 lightAttrib.append(coordXForm);
 
-lightSource = MPbrtElement('LightSource', 'distant', '');
+lightSource = MPbrtElement('LightSource', 'type', 'distant');
 lightSource.setParameter('from', 'point', [0 0 0]);
 lightSource.setParameter('to', 'point', [0 0 1]);
 lightSource.setParameter('L', 'rgb', [3 3 3]);
 lightAttrib.append(lightSource);
 
 %% Add a shape to the world.
-shapeAttrib = MPbrtContainer('Attribute', '');
+shapeAttrib = MPbrtContainer('Attribute');
 scene.world.append(shapeAttrib);
 
-rotate = MPbrtElement('Rotate', '', '');
-rotate.value = [135 1 0 0];
-rotate.valueType = 'raw';
+rotate = MPbrtElement('Rotate', ...
+    'value', [135 1 0 0], ...
+    'valueType', 'raw');
 shapeAttrib.append(rotate);
 
-texture = MPbrtElement('Texture', 'checkerboard', '');
-texture.value = {'checks', 'spectrum'};
+texture = MPbrtElement('Texture', ...
+    'type', 'checkerboard', ...
+    'value', {'checks', 'spectrum'});
 texture.setParameter('uscale', 'float', 4);
 texture.setParameter('vscale', 'float', 4);
 texture.setParameter('tex1', 'rgb', [1 0 0]);
 texture.setParameter('tex2', 'rgb', [0 0 1]);
 shapeAttrib.append(texture);
 
-material = MPbrtElement('Material', 'matte', '');
+material = MPbrtElement('Material', 'type', 'matte');
 material.setParameter('Kd', 'texture', 'checks');
 shapeAttrib.append(material);
 
-shape = MPbrtElement('Shape', 'disk', '');
+shape = MPbrtElement('Shape', 'type', 'disk');
 shape.setParameter('radius', 'float', 20);
 shape.setParameter('height', 'float', -1);
 shapeAttrib.append(shape);

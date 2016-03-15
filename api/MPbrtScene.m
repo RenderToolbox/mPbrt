@@ -16,11 +16,8 @@ classdef MPbrtScene < handle
     
     methods
         function self = MPbrtScene()
-            self.overall = MPbrtContainer('', '');
-            self.overall.indent = '';
-            
-            self.world = MPbrtContainer('World', '');
-            self.world.indent = '';
+            self.overall = MPbrtContainer('', 'indent', '');            
+            self.world = MPbrtContainer('World', 'indent', '');
         end
         
         function printToFile(self, outputFile)

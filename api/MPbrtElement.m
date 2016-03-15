@@ -34,10 +34,36 @@ classdef MPbrtElement < MPbrtNode
     end
     
     methods
-        function self = MPbrtElement(identifier, type, name)
-            self.identifier = identifier;
-            self.name = name;
-            self.type = type;
+        function self = MPbrtElement(identifier, varargin)
+            % Make a new PBRT scene element.
+            %   The PBRT identifier, like Shape or Camera is required.
+            %   Other fields may be set as named parameters.  For example:
+            %       MPbrtElement(identifier, ...
+            %           'name', 'foo', ...
+            %           'comment', bar, ...
+            %           'indent', '    ')
+            
+            parser = inputParser();
+            parser.addRequired('identifier', @ischar);
+            props = properties('MPbrtElement');
+            for pp = 1:numel(props)
+                prop = props{pp};
+                if strcmp('identifier', prop)
+                    continue;
+                end
+                parser.addParameter(prop, '');
+            end
+            parser.parse(identifier, varargin{:});
+            
+            % assign properties from the parser, including idenentifier
+            fields = fieldnames(parser.Results);
+            for ff = 1:numel(fields)
+                field = fields{ff};
+                if ismember(field, parser.UsingDefaults)
+                    continue;
+                end
+                self.(field) = parser.Results.(field);
+            end
         end
         
         function print(self, fid, workingIndent)
