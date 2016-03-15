@@ -12,6 +12,8 @@ Film "image"
 
 WorldBegin
 AttributeBegin
+  # camera-transform
+  # Move the coordinate system to match the camera.
   CoordSysTransform "camera"   
   LightSource "distant"   
     "point from" [0 0 0] 

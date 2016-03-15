@@ -33,7 +33,6 @@
 %
 % Now let's build it!
 %
-% BSH
 
 %% Start with a blank scene.
 clear;

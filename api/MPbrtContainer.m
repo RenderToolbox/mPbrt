@@ -79,12 +79,15 @@ classdef MPbrtContainer < MPbrtNode
             self.nested{index} = node;
         end
         
-        function existing = find(self, identifier, name, varargin)
+        function existing = find(self, identifier, varargin)
             % Find a node nested under this container.
-            %   existing = find(self, identifier, name, varargin)
-            %   recursively searches this container and nested nodes for a
-            %   node that has the given identifier and name.  If found,
-            %   returns the node.  Otherwise returns [].
+            %   existing = find(self, identifier) recursively searches this
+            %   container and nested nodes for a node that has the given
+            %   identifier.  The first node found is returned, if any.  If
+            %   no node was found, returns [].
+            %
+            %   find( ... 'name', name) restricts the search to nodes that
+            %   have the given name, as well as the given identifier.
             %
             %   find( ... 'remove', remove) specifies whether to remove the
             %   node that was found from its container (true), or not
@@ -92,27 +95,40 @@ classdef MPbrtContainer < MPbrtNode
             
             parser = inputParser();
             parser.addRequired('identifier', @ischar);
-            parser.addRequired('name', @ischar);
+            parser.addParameter('name', '', @ischar);
             parser.addParameter('remove', false, @islogical);
-            parser.parse(identifier, name, varargin{:});
+            parser.parse(identifier, varargin{:});
             identifier = parser.Results.identifier;
             name = parser.Results.name;
             remove = parser.Results.remove;
             
             % is it this container?
-            if strcmp(self.identifier, identifier) && strcmp(self.name, name)
+            if strcmp(self.identifier, identifier) ...
+                    && (isempty(name) || strcmp(self.name, name))
                 existing = self;
                 return;
             end
             
             % depth-first search of nested nodes
             for nn = 1:numel(self.nested)
-                existing = self.nested{nn}.find(identifier, name);
-                if ~isempty(existing)
+                node = self.nested{nn};
+                
+                % look for a direct child [and remove it]
+                if strcmp(node.identifier, identifier) ...
+                        && (isempty(name) || strcmp(node.name, name))
+                    existing = node;
                     if remove
                         self.nested(nn) = [];
                     end
                     return;
+                end
+                
+                % look for a deeper descendant
+                if isa(node, 'MPbrtContainer')
+                    existing = node.find(identifier, varargin{:});
+                    if ~isempty(existing)
+                        return;
+                    end
                 end
             end
             
