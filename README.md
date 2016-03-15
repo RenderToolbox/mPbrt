@@ -89,3 +89,21 @@ CoordSysTransform "camera"
 ```
 
 ### Add, Find, and Delete from a Scene
+All your Elements and Containers should go in a Scene.  The scene has an "overall" part for things that come before the `WorldBegin` line, like the camera.  The scene also has a "world" part for everything else, inluding shapes and light sources.
+
+The Scene does more than organize you objects.  You can add objects to the Scene, search the Scene for existing objects, and remove objects from the Scene.  In one programmer's very humble opinion, these abilities make mPath more fun (ie better) than a plain PBRT text file!
+
+Here's an example that adds two objects to a scene.
+```
+todo
+```
+
+We can find one of the objects and update it.
+```
+todo
+```
+
+We can removes the other object.
+```
+todo
+```
