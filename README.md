@@ -36,6 +36,13 @@ LightSource "distant"
   "rgb L" [3 3 3] 
 ```
 
+You can write generic Elements like in this example.  There are also utility methods for creating several common or complex types of element.  These include:
+  * [`MPbrtElement.comment()`](https://github.com/RenderToolbox3/mPbrt/blob/master/api/MPbrtElement.m#L128)
+  * [`MPbrtElement.transformation()`](https://github.com/RenderToolbox3/mPbrt/blob/master/api/MPbrtElement.m#L133)
+  * [`MPbrtElement.texture()`](https://github.com/RenderToolbox3/mPbrt/blob/master/api/MPbrtElement.m#L148)
+  * [`MPbrtElement.makeNamedMaterial()`](https://github.com/RenderToolbox3/mPbrt/blob/master/api/MPbrtElement.m#L157)
+  * [`MPbrtElement.namedMaterial()`](https://github.com/RenderToolbox3/mPbrt/blob/master/api/MPbrtElement.m#L65)
+
 ### Containers
 Containers are holders for nested elements.  For example the stuff that goes between `WorldBegin` and `WorldEnd` goes in a "World" container.  Likewise for stuff that goes in `AttributeBegin`/`AttributeEnd` sections, and other  `Begin`/`End` sections.
 
