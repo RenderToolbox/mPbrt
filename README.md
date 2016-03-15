@@ -62,9 +62,15 @@ AttributeBegin
     "point from" [0 0 0] 
     "point to" [0 0 1] 
     "rgb L" [3 3 3] 
-AttributeEnd```
+AttributeEnd
 ```
 
 ### Comments
+Elements and Containers both have the optional properties `name` and `comment`.  When these are provided, the objects will print extra comment lines before any other syntax.
+
+Here is an example of adding a name and comment to a coordinate transform:
+
+be back soon...
+
 
 ### Add, Find, and Delete from a Scene
