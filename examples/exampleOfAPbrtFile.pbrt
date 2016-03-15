@@ -21,6 +21,7 @@ AttributeEnd
 
 AttributeBegin
   Rotate 135 1 0 0   
+  # checks
   Texture "checks" "spectrum" "checkerboard"   
     "float uscale" [4] 
     "float vscale" [4] 

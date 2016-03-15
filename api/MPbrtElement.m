@@ -124,5 +124,50 @@ classdef MPbrtElement < MPbrtNode
                 'type', type, ...
                 'value', value);
         end
+        
+        function element = comment(comment, varargin)
+            % Utility to make a printable comment with no other data.
+            element = MPbrtElement('', 'comment', comment, varargin{:});
+        end
+        
+        function element = transformation(identifier, value, varargin)
+            % Utility to make a PBRT transformation element
+            if isnumeric(value)
+                % don't put transformation value in brackets
+                valueType = 'raw';
+            else
+                % valueType will be chosen from Matlab variable type
+                valueType = '';
+            end
+            element = MPbrtElement(identifier, ...
+                'value', value, ...
+                'valueType', valueType, ...
+                varargin{:});
+        end
+        
+        function element = texture(name, pixelType, textureType, varargin)
+            % Utility to make a pbrt Texture.
+            element = MPbrtElement('Texture', ...
+                'name', name, ...
+                'value', {name, pixelType}, ...
+                'type', textureType, ...
+                varargin{:});
+        end
+        
+        function element = makeNamedMaterial(name, type, varargin)
+            % Utility to declare a named material.
+            element = MPbrtElement('MakeNamedMaterial', ...
+                'name', name, ...
+                'value', {name, 'string type', type}, ...
+                varargin{:});
+        end
+        
+        function element = namedMaterial(name, varargin)
+            % Utility to invoke a previous named material.
+            element = MPbrtElement('NamedMaterial', ...
+                'value', name, ...
+                varargin{:});
+        end
+        
     end
 end

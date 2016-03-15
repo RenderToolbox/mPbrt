@@ -11,7 +11,7 @@
 %     Sampler "bestcandidate"
 %     Film "image" "string filename" ["simple.exr"]
 %          "integer xresolution" [200] "integer yresolution" [200]
-% 
+%
 %     WorldBegin
 %     AttributeBegin
 %       CoordSysTransform "camera"
@@ -19,7 +19,7 @@
 %                   "point from" [0 0 0] "point to"   [0 0 1]
 %                   "rgb L"    [3 3 3]
 %     AttributeEnd
-% 
+%
 %     AttributeBegin
 %       Rotate 135 1 0 0
 %       Texture "checks" "spectrum" "checkerboard"
@@ -42,9 +42,7 @@ clc;
 scene = MPbrtScene();
 
 %% Add the content at the "overall" level.
-lookAt = MPbrtElement('LookAt', ...
-    'value', [0 10 100   0 -1 0 0 1 0], ...
-    'valueType', 'raw');
+lookAt = MPbrtElement.transformation('LookAt', [0 10 100   0 -1 0 0 1 0]);
 scene.overall.append(lookAt);
 
 camera = MPbrtElement('Camera', 'type', 'perspective');
@@ -69,7 +67,7 @@ scene.overall.append(film);
 lightAttrib = MPbrtContainer('Attribute');
 scene.world.append(lightAttrib);
 
-coordXForm = MPbrtElement('CoordSysTransform', 'value', 'camera');
+coordXForm = MPbrtElement.transformation('CoordSysTransform', 'camera');
 lightAttrib.append(coordXForm);
 
 lightSource = MPbrtElement('LightSource', 'type', 'distant');
@@ -82,14 +80,10 @@ lightAttrib.append(lightSource);
 shapeAttrib = MPbrtContainer('Attribute');
 scene.world.append(shapeAttrib);
 
-rotate = MPbrtElement('Rotate', ...
-    'value', [135 1 0 0], ...
-    'valueType', 'raw');
+rotate = MPbrtElement.transformation('Rotate', [135 1 0 0]);
 shapeAttrib.append(rotate);
 
-texture = MPbrtElement('Texture', ...
-    'type', 'checkerboard', ...
-    'value', {'checks', 'spectrum'});
+texture = MPbrtElement.texture('checks', 'spectrum', 'checkerboard');
 texture.setParameter('uscale', 'float', 4);
 texture.setParameter('vscale', 'float', 4);
 texture.setParameter('tex1', 'rgb', [1 0 0]);
