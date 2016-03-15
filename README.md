@@ -1,13 +1,139 @@
 # mPbrt
 Matlab tools for constructing and writing PBRT scene files. 
 
-For now this is a sandbox repository.  Once we get things working and stable, we should add better intro/info below.
+We want to auto-generate [PBRT](http://www.pbrt.org/fileformat.html) scene files from Matlab.  We start with an object-oriented Matlab representation of the whole scene.  We can identify objects in the the scene by type and name, and add/find/update/remove them while working.  When done working, we can write out a PBRT scene text file based on the objects.
 
-# Initial Thoughts
-The basic idea goes like this:  We want to be able to auto-generate [PBRT](http://www.pbrt.org/fileformat.html) scene files from Matlab.  We want to start with a convenient Matlab representation of the whole scene.  We should be able to identify elements of the scene by name and type, and add/update/remove them while working.  When done working, we should have a "dumb" or "mechanical" utility for writing the Matlab representation out to a PBRT text file.
+For now we can only go from Matlab to PBRT.  We can't parse existing PBRT files.
 
-The matlab representation should not be over strict about what can go into the scene.  For example, if PBRT introduces a new scene element of type `Foo` that we haven't seen before, we should still be able to add a `Foo` to the scene in Matlab and get it written to the text file.  We should not have to scratch our heads and say, "Gee, I wish we had thought of Foo back when we were writing this.  Now what do we do?"
+# Get Started
+To get started, clone this repository and add it to your Matlab path.
 
-So the overall falvor will be "Here's a collection of PBRT top-level and world elements to write out in a formatted way," rather than "Here's a Matlab-based PBRT scene modeling tool."  3D modeling is a separate problem.
+See the example script at [examples/exampleOfAPbrtFile.m](https://github.com/RenderToolbox3/mPbrt/blob/master/examples/exampleOfAPbrtFile.m).  You should be able to run this script right away and produce a PBRT scene file like [this one](https://github.com/RenderToolbox3/mPbrt/blob/master/examples/exampleOfAPbrtFile.pbrt).
 
-For now we are only going one way: from a Matlab representation of a PBRT scene to a PBRT text file.  We are not trying to parse existing PBRT files.
+The idea of this example script is to reproduce the "official" example scene file from the [pber-v2 file format documentation](http://www.pbrt.org/fileformat.html).
+
+# The API
+The mPbrt API is based on a Scene which contains Elements and Containers.  These are written as Matlab [Classes](http://www.mathworks.com/help/matlab/object-oriented-programming.html).
+
+In general, you create objects and specify their names, types, values, etc.  Then the objects take care of writing well-formatted PBRT syntax to a text file.
+
+### Elements
+Elements are things like shapes, light sources, the camera, etc.  Each one has a declaration line followed by zero or more parameter lines.
+
+Here is an example of creating a `LightSource` element:
+```
+lightSource = MPbrtElement('LightSource', 'type', 'distant');
+lightSource.setParameter('from', 'point', [0 0 0]);
+lightSource.setParameter('to', 'point', [0 0 1]);
+lightSource.setParameter('L', 'rgb', [3 3 3]);
+```
+
+This produces the following PBRT syntax in the output file:
+```
+LightSource "distant"   
+  "point from" [0 0 0] 
+  "point to" [0 0 1] 
+  "rgb L" [3 3 3] 
+```
+
+You can write generic Elements as in this example.  There are also utility methods for creating some common or complex elements.  These include:
+  * [`MPbrtElement.comment()`](https://github.com/RenderToolbox3/mPbrt/blob/master/api/MPbrtElement.m#L128)
+  * [`MPbrtElement.transformation()`](https://github.com/RenderToolbox3/mPbrt/blob/master/api/MPbrtElement.m#L133)
+  * [`MPbrtElement.texture()`](https://github.com/RenderToolbox3/mPbrt/blob/master/api/MPbrtElement.m#L148)
+  * [`MPbrtElement.makeNamedMaterial()`](https://github.com/RenderToolbox3/mPbrt/blob/master/api/MPbrtElement.m#L157)
+  * [`MPbrtElement.namedMaterial()`](https://github.com/RenderToolbox3/mPbrt/blob/master/api/MPbrtElement.m#L165)
+
+### Containers
+Containers are holders for nested elements.  For example the stuff that goes between `WorldBegin` and `WorldEnd` goes in a "World" container.  Likewise, stuff you want to put in an `AttributeBegin`/`AttributeEnd` section would go in an "Attribute" container, and so on for other `Begin`/`End` sections.
+
+Here is an example of creating an `AttributeBegin`/`AttributeEnd` section that holds a coordinate transformation and a light source:
+```
+lightAttrib = MPbrtContainer('Attribute');
+
+coordXForm = MPbrtElement.transformation('CoordSysTransform', 'camera');
+lightAttrib.append(coordXForm);
+
+lightSource = MPbrtElement('LightSource', 'type', 'distant');
+lightSource.setParameter('from', 'point', [0 0 0]);
+lightSource.setParameter('to', 'point', [0 0 1]);
+lightSource.setParameter('L', 'rgb', [3 3 3]);
+lightAttrib.append(lightSource);
+```
+
+This produces the following PBRT syntax in the output file:
+```
+AttributeBegin
+  CoordSysTransform "camera"   
+  LightSource "distant"   
+    "point from" [0 0 0] 
+    "point to" [0 0 1] 
+    "rgb L" [3 3 3] 
+AttributeEnd
+```
+
+### Comments
+Elements and Containers have the optional properties `name` and `comment`.  When these properties are provided, the objects will print extra comment lines.
+
+Here is an example of adding a `name` and `comment` to a coordinate transform:
+```
+coordXForm = MPbrtElement.transformation('CoordSysTransform', 'camera', ...
+    'name', 'camera-transform', ...
+    'comment', 'Move the coordinate system to match the camera.');
+```
+
+This produces the following PBRT syntax in the output file:
+```
+# camera-transform
+# Move the coordinate system to match the camera.
+CoordSysTransform "camera"   
+```
+
+### Add, Find, and Delete from a Scene
+All your Elements and Containers go in a Scene.  The scene has an "overall" part for things that come before the `WorldBegin` line, like the camera.  The scene also has a "world" part for everything else, inluding shapes, light sources, etc.
+
+The Scene does more than organize you objects.  You can add objects to the Scene, search the Scene for existing objects, and remove objects from the Scene.  In one programmer's humble opinion, these abilities make mPath more fun than a plain PBRT text file!
+
+Here's an example that adds two elements to a scene.
+```
+scene = MPbrtScene();
+
+% add the camera at the "overall" level
+scene.overall.append(MPbrtElement('Camera', 'type', 'perspective'));
+
+% add a light to the "world", nested in an Attribute section
+lightAttrib = MPbrtContainer('Attribute');
+scene.world.append(lightAttrib);
+lightAttrib.append(MPbrtElement('LightSource', 'type', 'distant', 'name', 'the-light'));
+```
+
+We can find the camera and update it.
+```
+camera = scene.overall.find('Camera');
+camera.setParameter('fov', 'float', 30);
+```
+
+We can find the light and remove it altogether.
+```
+removedlight = scene.world.find('LightSource', 'name', 'the-light', 'remove', true);
+removedLight = 
+  MPbrtElement with properties:
+
+          value: []
+      valueType: ''
+           type: 'distant'
+     parameters: []
+           name: 'the-light'
+     identifier: 'LightSource'
+        comment: ''
+         indent: '  '
+    floatFormat: '%f'
+      intFormat: '%d'
+     scanFormat: '%f'
+```
+
+Once removed, we can no longer find the light.
+```
+shouldBeEmpty = scene.world.find('LightSource', 'name', 'the-light');
+shouldBeEmpty =
+     []
+```
