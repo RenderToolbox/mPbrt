@@ -1,8 +1,7 @@
 # mPbrt
 Matlab tools for constructing and writing PBRT scene files. 
 
-# Overview
-The basic idea goes like this:  We want to be able to auto-generate [PBRT](http://www.pbrt.org/fileformat.html) scene files from Matlab.  We want to start with a convenient Matlab representation of the whole scene.  We should be able to identify elements of the scene by name and type, and add/update/remove them while working.  When done working, we should be able to write out a PBRT scene file based on the matlab representation.
+The idea:  We want to be able to auto-generate [PBRT](http://www.pbrt.org/fileformat.html) scene files from Matlab.  We want to start with a convenient Matlab representation of the whole scene.  We should be able to identify elements of the scene by name and type, and add/update/remove them while working.  When done working, we should be able to write out a PBRT scene file based on the matlab representation.
 
 For now we are only going from Matlab to PBRT.  We are not trying to parse existing PBRT files.
 
