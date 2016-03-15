@@ -97,8 +97,10 @@ Here's an example that adds two elements to a scene.
 ```
 scene = MPbrtScene();
 
+% add the camera at the "overall" level
 scene.overall.append(MPbrtElement('Camera', 'type', 'perspective'));
 
+% add a light to the "world", nested in an Attribute section
 lightAttrib = MPbrtContainer('Attribute');
 scene.world.append(lightAttrib);
 lightAttrib.append(MPbrtElement('LightSource', 'type', 'distant', 'name', 'the-light'));
