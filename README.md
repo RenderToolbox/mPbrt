@@ -43,7 +43,6 @@ Containers are holders for nested elements.  For example the stuff that goes bet
 Here is an example of creating an `AttributeBegin`/`AttributeEnd` section that holds a coordinate transform and a light source:
 ```
 lightAttrib = MPbrtContainer('Attribute');
-scene.world.append(lightAttrib);
 
 coordXForm = MPbrtElement.transformation('CoordSysTransform', 'camera');
 lightAttrib.append(coordXForm);
