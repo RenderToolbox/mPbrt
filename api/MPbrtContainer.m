@@ -20,30 +20,23 @@ classdef MPbrtContainer < MPbrtNode
             % Required method from MPbrtNode.
             %   Print this container and its nested nodes.  Delimit this
             %   container and its contents with Begin/End and indenting.
-            if ~isempty(self.name)
-                fprintf(fid, '%s# %s\n', workingIndent, self.name);
-            end
             
-            if ~isempty(self.name)
-                fprintf(fid, '%s# %s\n', workingIndent, self.comment);
-            end
+            self.printSurrounded(fid, workingIndent, '# ', self.name, '\n');
+            self.printSurrounded(fid, workingIndent, '# ', self.comment, '\n');
             
-            if ~isempty(self.identifier)
-                if isempty(self.name)
-                    fprintf(fid, '%s%sBegin\n', workingIndent, self.identifier);
-                else
-                    fprintf(fid, '%s%sBegin "%s"\n', workingIndent, self.identifier, self.name);
-                end
+            if isempty(self.name)
+                beginSuffix = 'Begin\n';
+            else
+                beginSuffix = ['Begin "' self.name '"\n'];
             end
+            self.printSurrounded(fid, workingIndent, '', self.identifier, beginSuffix);
             
             nestedIndent = [workingIndent self.indent];
             for nn = 1:numel(self.nested)
                 self.nested{nn}.print(fid, nestedIndent);
             end
             
-            if ~isempty(self.identifier)
-                fprintf(fid, '%s%sEnd\n\n', workingIndent, self.identifier);
-            end
+            self.printSurrounded(fid, workingIndent, '', self.identifier, 'End\n\n');
         end
         
         function index = append(self, node)

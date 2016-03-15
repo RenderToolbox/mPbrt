@@ -41,15 +41,19 @@ classdef MPbrtScene < handle
                 end
                 
                 self.overall.print(fid, '');
+                fprintf(fid, '\n');
                 self.world.print(fid, '');
                 
             catch err
+                % close the file, even if there's an error
+                %   too bad we can't have a try/catch/finally block!
                 if ~isempty(fid) && fid > 2
                     fclose(fid);
                 end
                 rethrow(err);
             end
             
+            % close the file on success
             if ~isempty(fid) && fid > 2
                 fclose(fid);
             end

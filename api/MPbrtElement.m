@@ -43,25 +43,13 @@ classdef MPbrtElement < MPbrtNode
         function print(self, fid, workingIndent)
             % Required method from MPbrtNode.
             %   Print this element and value and/or parameters.
-            if ~isempty(self.name)
-                fprintf(fid, '%s# %s\n', workingIndent, self.name);
-            end
+            self.printSurrounded(fid, workingIndent, '# ', self.name, '\n');
+            self.printSurrounded(fid, workingIndent, '# ', self.comment, '\n');
             
-            if ~isempty(self.name)
-                fprintf(fid, '%s# %s\n', workingIndent, self.comment);
-            end
-            
-            fprintf(fid, '%s%s ', workingIndent, self.identifier);
-            
-            if ~isempty(self.value)
-                self.printValue(fid, self.value, self.valueType);
-            end
-            
-            if ~isempty(self.type)
-                self.printValue(fid, self.type, 'string');
-            end
-            
-            fprintf(fid, '%s\n', workingIndent);
+            self.printSurrounded(fid, workingIndent, '', self.identifier, ' ');
+            self.printValue(fid, self.value, self.valueType);
+            self.printValue(fid, self.type, 'string');
+            self.printSurrounded(fid, workingIndent, '', '\n', '');
             
             paramIndent = [workingIndent self.indent];
             for pp = 1:numel(self.parameters)
@@ -70,8 +58,6 @@ classdef MPbrtElement < MPbrtNode
                 self.printValue(fid, p.value, p.type);
                 fprintf(fid, '\n');
             end
-            
-            fprintf(fid, '\n');
         end
         
         function p = setParameter(self, name, type, value)

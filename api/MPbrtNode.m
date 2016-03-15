@@ -34,17 +34,40 @@ classdef MPbrtNode < handle
     end
     
     methods
+        function printSurrounded(self, fid, indent, prefix, string, suffix)
+            % Print the given string to the given file, if not empty.
+            %   This is a helper method for all nodes.  It handles the
+            %   common pattern of printing a string preceeded by an indent
+            %   and a prefix and followed by a suffix.  Or, if the given
+            %   string is empty, printing nothing.  The idea is to turn
+            %   this pattern into a one-liner for calling code.
+            %
+            %   The given indent, prefix, string, and suffix may contain
+            %   escaped characters, like '\n' for newline.
+            
+            if isempty(string)
+                return;
+            end
+            
+            fprintf(fid, [indent, prefix, string, suffix]);
+        end
+        
         function printValue(self, fid, value, type)
             % Print the given value to the file at fid.
             %   This is a helper method for all nodes.  It takes care
             %   of "quoting" and [bracketing] values as they are printed,
             %   based on the given type and/or the Matlab type of the
-            %   given value.
+            %   given value.  If the given value is empty, prints
+            %   nothing.
             %
             %   Prints the value, plus one space.  No indent, no newline.
             %
             %   If the value is a cell array, prints a value for each
             %   element.
+            
+            if isempty(value)
+                return;
+            end
             
             % chew through cell arrays recursively
             if iscell(value)
@@ -54,7 +77,7 @@ classdef MPbrtNode < handle
                 return;
             end
             
-            % if missing, check for non-numeric type
+            % if type missing, check for non-numeric type
             if isempty(type)
                 if ischar(value)
                     type = 'string';
@@ -69,7 +92,7 @@ classdef MPbrtNode < handle
             switch type
                 case 'raw'
                     fprintf(fid, '%s ', value);
-                
+                    
                 case {'string', 'texture'}
                     fprintf(fid, '"%s" ', value);
                     

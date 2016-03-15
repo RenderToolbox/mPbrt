@@ -1,14 +1,10 @@
 LookAt 0 10 100 0 -1 0 0 1 0 
-
 Camera "perspective" 
   "float fov" [30] 
-
 PixelFilter "mitchell" 
   "float xwidth" [2] 
   "float ywidth" [2] 
-
 Sampler "bestcandidate" 
-
 Film "image" 
   "string filename" "simple.exr" 
   "integer xresolution" [200] 
@@ -17,30 +13,24 @@ Film "image"
 WorldBegin
 AttributeBegin
   CoordSysTransform "camera"   
-
   LightSource "distant"   
     "point from" [0 0 0] 
     "point to" [0 0 1] 
     "rgb L" [3 3 3] 
-
 AttributeEnd
 
 AttributeBegin
   Rotate 135 1 0 0   
-
   Texture "checks" "spectrum" "checkerboard"   
     "float uscale" [4] 
     "float vscale" [4] 
     "rgb tex1" [1 0 0] 
     "rgb tex2" [0 0 1] 
-
   Material "matte"   
     "texture Kd" "checks" 
-
   Shape "disk"   
     "float radius" [20] 
     "float height" [-1] 
-
 AttributeEnd
 
 WorldEnd
