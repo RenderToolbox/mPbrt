@@ -137,3 +137,5 @@ shouldBeEmpty = scene.world.find('LightSource', 'name', 'the-light');
 shouldBeEmpty =
      []
 ```
+
+See a similar example script at [examples/addFindRemoveFromScene.m](https://github.com/RenderToolbox3/mPbrt/blob/master/examples/addFindRemoveFromScene.m).
