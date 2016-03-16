@@ -63,7 +63,8 @@ classdef MPbrtContainer < MPbrtNode
                 self.nested{nn}.print(fid, nestedIndent);
             end
             
-            self.printSurrounded(fid, workingIndent, '', self.identifier, 'End\n\n');
+            self.printSurrounded(fid, workingIndent, '', self.identifier, 'End\n');
+            fprintf(fid, '\n');
         end
         
         function index = append(self, node)

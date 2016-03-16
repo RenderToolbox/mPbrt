@@ -38,7 +38,6 @@ classdef MPbrtScene < handle
                 end
                 
                 self.overall.print(fid, '');
-                fprintf(fid, '\n');
                 self.world.print(fid, '');
                 
             catch err
