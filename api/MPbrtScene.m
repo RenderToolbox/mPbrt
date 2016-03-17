@@ -16,7 +16,7 @@ classdef MPbrtScene < handle
     
     methods
         function self = MPbrtScene()
-            self.overall = MPbrtContainer('', 'indent', '');            
+            self.overall = MPbrtContainer('', 'indent', '');
             self.world = MPbrtContainer('World', 'indent', '');
         end
         
@@ -38,7 +38,10 @@ classdef MPbrtScene < handle
                 end
                 
                 self.overall.print(fid, '');
-                self.world.print(fid, '');
+                
+                if ~isempty(self.world.nested)
+                    self.world.print(fid, '');
+                end
                 
             catch err
                 % close the file, even if there's an error
