@@ -88,7 +88,8 @@ classdef MPbrtContainer < MPbrtNode
             %   no node was found, returns [].
             %
             %   find( ... 'name', name) restricts the search to nodes that
-            %   have the given name, as well as the given identifier.
+            %   have the given identifier, and whose name matches or
+            %   contains the given name.
             %
             %   find( ... 'remove', remove) specifies whether to remove the
             %   node that was found from its container (true), or not
@@ -105,7 +106,7 @@ classdef MPbrtContainer < MPbrtNode
             
             % is it this container?
             if strcmp(self.identifier, identifier) ...
-                    && (isempty(name) || strcmp(self.name, name))
+                    && (isempty(name) || ~isempty(strfind(self.name, name)))
                 existing = self;
                 return;
             end
@@ -116,7 +117,7 @@ classdef MPbrtContainer < MPbrtNode
                 
                 % look for a direct child [and remove it]
                 if strcmp(node.identifier, identifier) ...
-                        && (isempty(name) || strcmp(node.name, name))
+                        && (isempty(name) || ~isempty(strfind(node.name, name)))
                     existing = node;
                     if remove
                         self.nested(nn) = [];

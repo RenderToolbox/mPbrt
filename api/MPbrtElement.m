@@ -109,6 +109,25 @@ classdef MPbrtElement < MPbrtNode
             % insert or append to struct array
             self.parameters(index) = p;
         end
+        
+        function p = getParameter(self, name)
+            % Locate a parameter with the given name.
+            %   If a parameter with the given name exists, finds and
+            %   returns it.  Otherwise returns [].
+            
+            if isempty(self.parameters)
+                p = [];
+                return;
+            end
+            
+            isName = strcmp(name, {self.parameters.name});
+            if any(isName)
+                index = find(isName, 1, 'first');
+                p = self.parameters(index);
+            else
+                p = [];
+            end
+        end
     end
     
     methods (Static)
@@ -132,7 +151,10 @@ classdef MPbrtElement < MPbrtNode
         
         function element = transformation(identifier, value, varargin)
             % Utility to make a PBRT transformation element
-            if isnumeric(value)
+            if any(strcmp({'ConcatTransform', 'Transform'}, identifier))
+                % valueType will be chosen from Matlab variable type
+                valueType = '';
+            elseif isnumeric(value)
                 % don't put transformation value in brackets
                 valueType = 'raw';
             else
