@@ -110,22 +110,25 @@ classdef MPbrtElement < MPbrtNode
             self.parameters(index) = p;
         end
         
-        function p = getParameter(self, name)
+        function [value, type] = getParameter(self, name)
             % Locate a parameter with the given name.
             %   If a parameter with the given name exists, finds and
-            %   returns it.  Otherwise returns [].
+            %   returns its value and type.  Otherwise returns [].
             
             if isempty(self.parameters)
-                p = [];
+                value = [];
+                type = [];
                 return;
             end
             
             isName = strcmp(name, {self.parameters.name});
             if any(isName)
                 index = find(isName, 1, 'first');
-                p = self.parameters(index);
+                value = self.parameters(index).value;
+                type = self.parameters(index).type;
             else
-                p = [];
+                value = [];
+                type = [];
             end
         end
     end
@@ -180,7 +183,8 @@ classdef MPbrtElement < MPbrtNode
             % Utility to declare a named material.
             element = MPbrtElement('MakeNamedMaterial', ...
                 'name', name, ...
-                'value', {name, 'string type', type}, ...
+                'value', {name, 'string type'}, ...
+                'type', type, ...
                 varargin{:});
         end
         

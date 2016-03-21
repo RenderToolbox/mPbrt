@@ -8,6 +8,9 @@ classdef MPbrtContainer < MPbrtNode
     properties
         % Collection of nested containers or elements.
         nested = {};
+        
+        % Whether to print the node name after the Begin line.
+        beginWithName = false;
     end
     
     methods
@@ -51,7 +54,7 @@ classdef MPbrtContainer < MPbrtNode
             self.printSurrounded(fid, workingIndent, '# ', self.name, '\n');
             self.printSurrounded(fid, workingIndent, '# ', self.comment, '\n');
             
-            if isempty(self.name)
+            if isempty(self.name) || ~self.beginWithName
                 beginSuffix = 'Begin\n';
             else
                 beginSuffix = ['Begin "' self.name '"\n'];
