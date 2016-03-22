@@ -135,7 +135,7 @@ classdef MPbrtNode < handle
                 return;
             end
             
-            if ischar(vector)
+            if ~isnumeric(vector)
                 string = vector;
                 return;
             end

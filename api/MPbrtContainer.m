@@ -70,17 +70,52 @@ classdef MPbrtContainer < MPbrtNode
             fprintf(fid, '\n');
         end
         
-        function index = append(self, node)
-            % Append a node nested under this container.
-            %   Returns the index where the new node was appended.
+        function isGivenNode = nodePosition(self, node)
+            % Check if the given node is nested in this container.
+            %   Returns a logical array the same size as self.nested, true
+            %   where the given node appears in self.nested, if at all.
+            % find the first occurence of the node, if any
+            
+            % no trick, just compare against each nested object
+            nNested = numel(self.nested);
+            isGivenNode = false(1, nNested);
+            for nn = 1:nNested
+                isGivenNode(nn) = node == self.nested{nn};
+            end
+        end
+        
+        function index = prepend(self, node)
+            % Prepend a node nested under this container.
+            %   If the node is already nested in this container, it will be
+            %   moved to the front.  Returns the index where the new node
+            %   was appended, which will always be 1, or [] if there was an
+            %   error.
             
             if ~isa(node, 'MPbrtNode')
                 index = [];
                 return;
             end
             
-            index = numel(self.nested) + 1;
-            self.nested{index} = node;
+            index = 1;
+            isGivenNode = self.nodePosition(node);
+            self.nested = cat(2, {node}, self.nested(~isGivenNode));
+        end
+        
+        function index = append(self, node)
+            % Append a node nested under this container.
+            %   If the node is already nested in this container, it will be
+            %   moved to the back.  Returns the index where the new node
+            %   was appended, or [] if there was an
+            %   error.
+            
+            if ~isa(node, 'MPbrtNode')
+                index = [];
+                return;
+            end
+            
+            isGivenNode = self.nodePosition(node);
+            self.nested = cat(2, self.nested(~isGivenNode), {node});
+            index = numel(self.nested);
         end
         
         function existing = find(self, identifier, varargin)
