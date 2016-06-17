@@ -83,18 +83,18 @@ if ~isempty(data.vertices)
 end
 
 if ~isempty(data.normals)
-    pbrtShape.setParameter('N', 'normal', data.normals);
+%    pbrtShape.setParameter('N', 'normal', data.normals);
 end
 
 if ~isempty(data.tangents)
-    pbrtShape.setParameter('S', 'vector', data.tangents);
+%    pbrtShape.setParameter('S', 'vector', data.tangents);
 end
 
 if ~isempty(data.textureCoordinates0)
     % only use the first set of texture coordinates
     % always assume 2 uv components (no uvw)
     uv = data.textureCoordinates0(1:2,:);
-    pbrtShape.setParameter('uv', 'float', uv);
+%    pbrtShape.setParameter('uv', 'float', uv);
 end
 
 %% Follow 0-based index to the mesh's material.
