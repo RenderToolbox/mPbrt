@@ -9,6 +9,7 @@ function [img, scaleFactor] = parsePfm(filePath)
 %   https://github.com/cbraley/hdr/blob/master/matlab/parsePfm.m
 %
 % Minor edits by benjamin.heasly@gmail.com (BSH) for output matrix height
+% and vertical flip.
 %
 
 
