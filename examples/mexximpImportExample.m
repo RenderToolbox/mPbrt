@@ -66,12 +66,13 @@ pbrtScene.printToFile(sceneFile);
 %% Try to render with PBRT.
 
 % locate a pbrt executable?
-pbrt = '/home/ben/render/pbrt/pbrt-v2/src/bin/pbrt';
-%[status, pbrt] = system('which pbrt');
+%pbrt = '/home/ben/render/pbrt/pbrt-v2/src/bin/pbrt';
+[status, pbrt] = system('which pbrt');
 if isempty(pbrt)
     disp('PBRT renderer not found.');
     return;
 end
+pbrt = regexprep(pbrt, '[\n\r]*', '');
 
 % render
 imageFile = fullfile(outputFolder, 'milleniumFalcon.pfm');
