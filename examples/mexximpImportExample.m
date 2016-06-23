@@ -28,9 +28,17 @@ mexximpScene = mexximpCleanImport(sourceFile);
 mexximpScene = mexximpCentralizeCamera(mexximpScene, 'viewAxis', [-1 0.5 0.5]);
 mexximpScene = mexximpAddLanterns(mexximpScene);
 
-%% Convert the mexximp scene struct to an mMitsuba object graph.
+%% Convert the mexximp scene struct to an mPbrt object graph.
+
+% template material to fill in during conversion
+materialDefault = MPbrtElement.makeNamedMaterial('', 'matte');
+materialDefault.setParameter('Kd', 'rgb', 0.5 * [1 1 1]);
+
+% convert mexximp struct -> mPbrt objects
 pbrtScene = mPbrtImportMexximp(mexximpScene, ...
-    'workingFolder', outputFolder);
+    'workingFolder', outputFolder, ...
+    'materialDefault', materialDefault, ...
+    'materialDiffuseParameter', 'Kd');
 
 % add missing elements mexximp doesn't know about
 sampler = MPbrtElement('Sampler', 'type', 'lowdiscrepancy');
@@ -51,29 +59,27 @@ film.setParameter('yresolution', 'integer', 480);
 pbrtScene.overall.append(film);
 
 
-%% Print out a Mitsuba scene file.
+%% Print out a PBRT scene file.
 sceneFile = fullfile(outputFolder, 'milleniumFalcon.pbrt');
 pbrtScene.printToFile(sceneFile);
 
-%% Try to render with Mitsuba.
+%% Try to render with PBRT.
 
 % locate a pbrt executable?
-%pbrt = '/home/ben/render/pbrt/pbrt-v2-spectral/src/bin/pbrt';
-[status, pbrt] = system('which pbrt');
+pbrt = '/home/ben/render/pbrt/pbrt-v2/src/bin/pbrt';
+%[status, pbrt] = system('which pbrt');
 if isempty(pbrt)
     disp('PBRT renderer not found.');
     return;
 end
 
 % render
-imageFile = fullfile(outputFolder, 'milleniumFalcon.dat');
+imageFile = fullfile(outputFolder, 'milleniumFalcon.pfm');
 pbrtCommand = sprintf('%s --outfile "%s" "%s"\n', ...
     pbrt, imageFile, sceneFile);
 system(pbrtCommand);
 
-% assume pbrt-v2-spectal rendering in the "dat" file format
-[imageData, imageSize, lens] = readDat(imageFile);
-
-% collapse across spectral planes for easy viewing
-collapsedImage = sum(imageData, 3);
-imshow(collapsedImage, []);
+% use handy pfm reader from cbraley at GitHub
+%   https://github.com/cbraley/hdr/blob/master/matlab/parsePfm.m
+imageData = parsePfm(imageFile);
+imshow(imageData ./ max(imageData(:)));
