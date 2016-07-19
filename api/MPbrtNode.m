@@ -127,6 +127,9 @@ classdef MPbrtNode < handle
             %    Makes a best effort to print the given numeric vector to a
             %    string integer or floating point representation.
             %
+            % If the vector contains non-finite values, we will replace
+            % these with zeros.
+            %
             % It's OK if the vector is empty or already a string, we will
             % just return early.
             
@@ -140,6 +143,9 @@ classdef MPbrtNode < handle
                 return;
             end
             
+            % replace non-finite values with zeros
+            vector(~isfinite(vector)) = 0;
+
             % try to print compact integers
             if all(vector == round(vector))
                 format = [self.intFormat ' '];
