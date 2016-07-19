@@ -106,6 +106,7 @@ function [img, scaleFactor] = parsePfm(filePath)
     fclose(fid);
     
     %Put the data into the output buffer
+    %{
     idx = 1;
     for i = 1:imHeight
         for j = 1:imWidth
@@ -116,9 +117,14 @@ function [img, scaleFactor] = parsePfm(filePath)
             end
         end
     end
+    %}
     %TODO: There's probably a Matlab function to do the above set of nested
     %loops in a single statement.  This will likely be faster.  However,
     %I'm not going to waste my time looking for it since .pfm IO is not a
     %bottleneck in my code
+    
+    % Code by HB
+    tmp = reshape(rawData,[numChannels, imHeight*imWidth])';
+    img = rot90(reshape(tmp,[imWidth, imHeight, numChannels]),1);
     
 end
