@@ -41,11 +41,15 @@ for cc = cameraInds
 end
 
 %% MakeNamedMaterial for each material.
+%   May need textures, too.
 %   Invoked with NamedMaterial by nodes below.
 materialInds = find(strcmp('materials', elementTypes));
 for mm = materialInds
-    pbrtNode = mPbrtImportMexximpMaterial(mexximpScene, elements(mm), varargin{:});
-    pbrtScene.world.append(pbrtNode);
+    [pbrtMaterial, pbrtTextures] = mPbrtImportMexximpMaterial(mexximpScene, elements(mm), varargin{:});
+    for tt = 1:numel(pbrtTextures)
+        pbrtScene.world.append(pbrtTextures{tt});
+    end
+    pbrtScene.world.append(pbrtMaterial);
 end
 
 %% Lights and world transformations with AttributeBegin/End.
