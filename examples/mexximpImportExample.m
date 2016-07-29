@@ -18,15 +18,20 @@
 clear;
 clc;
 
-sourceFile = which('millenium-falcon.obj');
+%sourceFile = which('millenium-falcon.obj');
+sourceFile = which('model.obj');
 outputFolder = fullfile(tempdir(), 'mexximpImportExample');
 
+
 %% Load the 3D scene.
-mexximpScene = mexximpCleanImport(sourceFile);
+[mexximpScene, mexximpElements] = mexximpCleanImport(sourceFile, ...
+    'workingFolder', outputFolder, ...
+    'toReplace', {'png', 'jpg'}, ...
+    'targetFormat', 'exr');
 
 % add missing camera and lights
 mexximpScene = mexximpCentralizeCamera(mexximpScene, 'viewAxis', [-1 0.5 0.5]);
-mexximpScene = mexximpAddLanterns(mexximpScene);
+mexximpScene = mexximpAddLanterns(mexximpScene, 'lanternRgb', [10 11 12]);
 
 %% Convert the mexximp scene struct to an mPbrt object graph.
 
@@ -60,14 +65,14 @@ pbrtScene.overall.append(film);
 
 
 %% Print out a PBRT scene file.
-sceneFile = fullfile(outputFolder, 'milleniumFalcon.pbrt');
+sceneFile = fullfile(outputFolder, 'mexximpImportExample.pbrt');
 pbrtScene.printToFile(sceneFile);
 
 %% Try to render with PBRT.
 
 % locate a pbrt executable?
-%pbrt = '/home/ben/render/pbrt/pbrt-v2/src/bin/pbrt';
-[status, pbrt] = system('which pbrt');
+pbrt = '/home/ben/render/pbrt/pbrt-v2/src/bin/pbrt';
+%[status, pbrt] = system('which pbrt');
 if isempty(pbrt)
     disp('PBRT renderer not found.');
     return;
@@ -75,12 +80,21 @@ end
 pbrt = regexprep(pbrt, '[\n\r]*', '');
 
 % render
-imageFile = fullfile(outputFolder, 'milleniumFalcon.pfm');
+imageFile = fullfile(outputFolder, 'mexximpImportExample.exr');
 pbrtCommand = sprintf('%s --outfile "%s" "%s"\n', ...
     pbrt, imageFile, sceneFile);
 system(pbrtCommand);
 
-% use handy pfm reader from cbraley at GitHub
-%   https://github.com/cbraley/hdr/blob/master/matlab/parsePfm.m
-imageData = parsePfm(imageFile);
-imshow(imageData ./ max(imageData(:)));
+%% Convert exr to png for viewing.
+% see exrtools: http://scanline.ca/exrtools/
+normalized = mexximpExrTools(imageFile, ...
+    'operation', 'exrnormalize', ...
+    'outFile', fullfile(outputFolder, 'normalized.exr'));
+toneMapped = mexximpExrTools(normalized, ...
+    'operation', 'exrpptm', ...
+    'outFile', fullfile(outputFolder, 'toneMapped.exr'));
+renormalized = mexximpExrTools(toneMapped, ...
+    'operation', 'exrnormalize', ...
+    'outFile', fullfile(outputFolder, 'renormalized.exr'));
+pngFile = mexximpExrTools(normalized);
+imshow(pngFile)
