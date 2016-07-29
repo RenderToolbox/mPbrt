@@ -1,7 +1,7 @@
-function pbrtElement = mPbrtImportMexximpMaterial(scene, material, varargin)
+function [pbrtMaterial, pbrtTextures] = mPbrtImportMexximpMaterial(scene, material, varargin)
 %% Convert a mexximp material to an mPbrt MakeNamedMaterial element.
 %
-% pbrtElement = mPbrtImportMexximpMaterial(scene, material) cherry picks
+% pbrtMaterial = mPbrtImportMexximpMaterial(scene, material) cherry picks
 % material properties from the given mexximp material and scene and uses
 % these to create an mPbrt scene Material element.
 %
@@ -28,7 +28,7 @@ function pbrtElement = mPbrtImportMexximpMaterial(scene, material, varargin)
 % Returns an MPbrtElement with identifier MakeNamedMaterial and parameters
 % filled in based on mexximp material properties.
 %
-% pbrtElement = mPbrtImportMexximpMaterial(scene, material, varargin)
+% pbrtMaterial = mPbrtImportMexximpMaterial(scene, material, varargin)
 %
 % Copyright (c) 2016 mexximp Team
 
@@ -46,6 +46,8 @@ materialDefault = parser.Results.materialDefault;
 materialDiffuseParameter = parser.Results.materialDiffuseParameter;
 materialSpecularParameter = parser.Results.materialSpecularParameter;
 
+pbrtTextures = {};
+
 %% Dig out the material name.
 materialName = material.name;
 materialIndex = material.path{end};
@@ -59,22 +61,34 @@ diffuseTexture = queryProperties(properties, 'textureSemantic', 'diffuse', 'data
 specularTexture = queryProperties(properties, 'textureSemantic', 'specular', 'data', '');
 
 %% Build the pbrt material.
-pbrtElement = MPbrtElement.makeNamedMaterial(pbrtName, materialDefault.type);
-pbrtElement.parameters = materialDefault.parameters;
+pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, materialDefault.type);
+pbrtMaterial.parameters = materialDefault.parameters;
 
-if ~isempty(materialDiffuseParameter) && ~isempty(pbrtElement.getParameter(materialDiffuseParameter))
+if ~isempty(materialDiffuseParameter) && ~isempty(pbrtMaterial.getParameter(materialDiffuseParameter))
     if ~isempty(diffuseTexture)
-        pbrtElement.setParameter(materialDiffuseParameter, 'texture', diffuseTexture);
+        % make an imagemap texture?
+        if ischar(diffuseTexture)
+            [pbrtTextures{end+1}, textureName] = makeImageMap(diffuseTexture);
+            pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
+        else
+            pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', diffuseTexture);
+        end
     elseif ~isempty(diffuseRgb)
-        pbrtElement.setParameter(materialDiffuseParameter, 'rgb', diffuseRgb(1:3));
+        pbrtMaterial.setParameter(materialDiffuseParameter, 'rgb', diffuseRgb(1:3));
     end
 end
 
-if ~isempty(materialSpecularParameter) && ~isempty(pbrtElement.getParameter(materialSpecularParameter))
+if ~isempty(materialSpecularParameter) && ~isempty(pbrtMaterial.getParameter(materialSpecularParameter))
     if ~isempty(specularTexture)
-        pbrtElement.setParameter(materialSpecularParameter, 'texture', specularTexture);
+        % make an imagemap texture?
+        if ischar(specularTexture)
+            [pbrtTextures{end+1}, textureName] = makeImageMap(specularTexture);
+            pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
+        else
+            pbrtMaterial.setParameter(materialSpecularParameter, 'texture', specularTexture);
+        end
     elseif ~isempty(specularRgb)
-        pbrtElement.setParameter(materialSpecularParameter, 'rgb', specularRgb(1:3));
+        pbrtMaterial.setParameter(materialSpecularParameter, 'rgb', specularRgb(1:3));
     end
 end
 
@@ -87,3 +101,9 @@ if 1 == resultScore
 else
     result = defaultResult;
 end
+
+%% Make an imagemap texture with a name like its image file.
+function [texture, textureName] = makeImageMap(imageFile)
+[~, textureName] = fileparts(imageFile);
+texture = MPbrtElement.texture(textureName, 'spectrum', 'imagemap');
+texture.setParameter('filename', 'string', imageFile);
