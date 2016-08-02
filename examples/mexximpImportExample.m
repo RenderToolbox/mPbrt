@@ -74,10 +74,6 @@ pbrtScene.printToFile(sceneFile);
 
 % locate a pbrt executable?
 pbrt = 'pbrt';
-if isempty(pbrt)
-    disp('PBRT renderer not found.');
-    return;
-end
 
 % render
 imageFile = fullfile(outputFolder, 'mexximpImportExample.exr');
