@@ -19,6 +19,7 @@ clear;
 clc;
 
 %sourceFile = which('millenium-falcon.obj');
+%sourceFile = '~/Downloads/1a9b552befd6306cc8f2d5fe7449af61/model.obj';
 sourceFile = which('model.obj');
 outputFolder = fullfile(tempdir(), 'mexximpImportExample');
 
@@ -27,10 +28,11 @@ outputFolder = fullfile(tempdir(), 'mexximpImportExample');
 [mexximpScene, mexximpElements] = mexximpCleanImport(sourceFile, ...
     'workingFolder', outputFolder, ...
     'toReplace', {'png', 'jpg'}, ...
-    'targetFormat', 'exr');
+    'targetFormat', 'exr', ...
+    'flipUVs', true);
 
 % add missing camera and lights
-mexximpScene = mexximpCentralizeCamera(mexximpScene, 'viewAxis', [-1 0.5 0.5]);
+mexximpScene = mexximpCentralizeCamera(mexximpScene, 'viewAxis', [.25 .25 1]);
 mexximpScene = mexximpAddLanterns(mexximpScene, 'lanternRgb', [10 11 12]);
 
 %% Convert the mexximp scene struct to an mPbrt object graph.
@@ -71,13 +73,7 @@ pbrtScene.printToFile(sceneFile);
 %% Try to render with PBRT.
 
 % locate a pbrt executable?
-pbrt = '/home/ben/render/pbrt/pbrt-v2/src/bin/pbrt';
-%[status, pbrt] = system('which pbrt');
-if isempty(pbrt)
-    disp('PBRT renderer not found.');
-    return;
-end
-pbrt = regexprep(pbrt, '[\n\r]*', '');
+pbrt = 'pbrt';
 
 % render
 imageFile = fullfile(outputFolder, 'mexximpImportExample.exr');
@@ -96,5 +92,5 @@ toneMapped = mexximpExrTools(normalized, ...
 renormalized = mexximpExrTools(toneMapped, ...
     'operation', 'exrnormalize', ...
     'outFile', fullfile(outputFolder, 'renormalized.exr'));
-pngFile = mexximpExrTools(normalized);
+pngFile = mexximpExrTools(renormalized);
 imshow(pngFile)

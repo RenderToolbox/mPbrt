@@ -144,7 +144,7 @@ classdef MPbrtContainer < MPbrtNode
             
             % is it this container?
             if strcmp(self.identifier, identifier) ...
-                    && (isempty(name) || ~isempty(strfind(self.name, name)))
+                    && (isempty(name) || ~isempty(regexp(self.name, name, 'once')))
                 existing = self;
                 return;
             end
@@ -155,7 +155,7 @@ classdef MPbrtContainer < MPbrtNode
                 
                 % look for a direct child [and remove it]
                 if strcmp(node.identifier, identifier) ...
-                        && (isempty(name) || ~isempty(strfind(node.name, name)))
+                        && (isempty(name) || ~isempty(regexp(node.name, name,'once')))
                     existing = node;
                     if remove
                         self.nested(nn) = [];
