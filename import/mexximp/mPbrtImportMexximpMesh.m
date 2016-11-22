@@ -117,6 +117,26 @@ pbrtNode.append(pbrtMaterial);
 pbrtInclude = MPbrtElement('Include', 'value', includeRelativePath);
 pbrtNode.append(pbrtInclude);
 
+% If the material has an opacity texture, we need to write it out here in
+% the mesh. Unfortunately, we don't seem to have access to the MPbrtElement
+% container that holds the material properties. As a hack, let's just check
+% the materialData for opacity textures, and "guess" the Texture name based
+% on how we named it in mPbrtImportMexximpMaterial.
+% This is not really elegant at all...but it works.
+opacityDataQuery = {'textureSemantic', mexximpStringMatcher('opacity')};
+opacityDataPath = {'properties', opacityDataQuery, 'data'};
+opacityData = mPathGet(materialData, opacityDataPath);
+% Sometimes the above lines pick up the "height" textureSemantic? Why? To
+% avoid this, we double check for the "opacity" textureSemantic in the if
+% statement below.
+opacityTextureSemanticPath = {'properties', opacityDataQuery, 'textureSemantic'}; 
+textureSemanticCheck = mPathGet(materialData, opacityTextureSemanticPath);
+if(strcmp(textureSemanticCheck,'opacity') && ~isempty(opacityData))
+   [~, textureName] = fileparts(opacityData);
+   pbrtOpacity = MPbrtElement('"texture alpha"','value',textureName);
+   pbrtNode.append(pbrtOpacity);
+end
+
 %% If necessary, write the include file.
 if 2 == exist(includeFile, 'file') && ~rewriteMeshData
     % use an existing Include file

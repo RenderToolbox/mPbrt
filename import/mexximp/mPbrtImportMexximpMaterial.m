@@ -60,6 +60,9 @@ specularRgb = queryProperties(properties, 'key', 'specular', 'data', []);
 diffuseTexture = queryProperties(properties, 'textureSemantic', 'diffuse', 'data', '');
 specularTexture = queryProperties(properties, 'textureSemantic', 'specular', 'data', '');
 
+opacityTexture = queryProperties(properties,'textureSemantic','opacity','data','');
+bumpTexture = queryProperties(properties,'textureSemantic','height','data','');
+
 %% Build the pbrt material.
 pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, materialDefault.type);
 pbrtMaterial.parameters = materialDefault.parameters;
@@ -82,6 +85,26 @@ if ~isempty(materialSpecularParameter) && ~isempty(pbrtMaterial.getParameter(mat
     end
 end
 
+% Add bump map if present
+if ~isempty(bumpTexture)&& ischar(bumpTexture)
+    [pbrtTextures{end+1}, textureName] = makeImageMapFloat(bumpTexture);
+    materialBumpParameter = 'bumpmap';
+    pbrtMaterial.setParameter(materialBumpParameter, 'texture', textureName);
+end
+
+% Add an opacity texture if present
+if ~isempty(opacityTexture) && ischar(opacityTexture)
+    [pbrtTextures{end+1}, textureName] = makeImageMapFloat(opacityTexture);
+    % The following needs to be written in the ObjectBegin/ObjectEnd
+    % section of the mesh with this material. If it's written out here, in
+    % MakeNamedMaterial it will not be applied to the mesh. See
+    % "mPbrtImportMexximpMesh.m"
+%     materialOpacityParameter = 'alpha';
+%     pbrtMaterial.setParameter(materialOpacityParameter, 'texture', textureName);
+
+end
+
+
 %% Query a material property, return default if no good match.
 function result = queryProperties(properties, queryField, queryValue, resultField, defaultResult)
 query = {queryField, mexximpStringMatcher(queryValue)};
@@ -96,4 +119,10 @@ end
 function [texture, textureName] = makeImageMap(imageFile)
 [~, textureName] = fileparts(imageFile);
 texture = MPbrtElement.texture(textureName, 'spectrum', 'imagemap');
+texture.setParameter('filename', 'string', imageFile);
+
+%% Make an imagemap texture as a float, for the opacity mask and bump map
+function [texture, textureName] = makeImageMapFloat(imageFile)
+[~, textureName] = fileparts(imageFile);
+texture = MPbrtElement.texture(textureName, 'float', 'imagemap');
 texture.setParameter('filename', 'string', imageFile);
