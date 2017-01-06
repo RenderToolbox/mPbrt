@@ -68,6 +68,7 @@ bumpTexture = queryProperties(properties,'textureSemantic','height','data','');
 
 %% Build the pbrt material.
 switch opacity
+    % If opaque use an uber material
     case 1
         pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, materialDefault.type);
         pbrtMaterial.parameters = materialDefault.parameters;
@@ -81,7 +82,7 @@ switch opacity
             end
         end
         
-        if ~isempty(materialSpecularParameter) && ~isempty(pbrtMaterial.getParameter(materialSpecularParameter))
+        if ~isempty(materialSpecularParameter) && ~isempty(pbrtMaterial.getParameter(materialSpecularParameter))paque 
             if ~isempty(specularTexture) && ischar(specularTexture)
                 [pbrtTextures{end+1}, textureName] = makeImageMap(specularTexture);
                 pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
@@ -90,12 +91,13 @@ switch opacity
             end
         end
         
+        % If not create a translucent material
     otherwise
         pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, 'translucent');
         % pbrtMaterial.setParameter('Kt','rgb', [opacity, opacity, opacity]);
         
         %pbrtMaterial.setParameter('index','float',indexOfRefraction);
-        pbrtMaterial.setParameter('reflect','rgb',[1 1 1]);
+        pbrtMaterial.setParameter('reflect','rgb',[opacity, opacity, opacity]);
         pbrtMaterial.setParameter('roughness','float',1);
         pbrtMaterial.setParameter('transmit','rgb',1-[opacity, opacity, opacity]);
         pbrtMaterial.setParameter('Kd','rgb',diffuseRgb(1:3));
