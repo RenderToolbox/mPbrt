@@ -57,29 +57,47 @@ pbrtName = mexximpCleanName(materialName, materialIndex);
 properties = mPathGet(scene, cat(2, material.path, {'properties'}));
 diffuseRgb = queryProperties(properties, 'key', 'diffuse', 'data', []);
 specularRgb = queryProperties(properties, 'key', 'specular', 'data', []);
+emissiveRgb = queryProperties(properties, 'key', 'emissive', 'data', []);
+opacity = queryProperties(properties, 'key', 'opacity', 'data', []);
+indexOfRefraction = queryProperties(properties, 'key', 'refract_i', 'data', []);
 diffuseTexture = queryProperties(properties, 'textureSemantic', 'diffuse', 'data', '');
 specularTexture = queryProperties(properties, 'textureSemantic', 'specular', 'data', '');
 
 %% Build the pbrt material.
-pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, materialDefault.type);
-pbrtMaterial.parameters = materialDefault.parameters;
-
-if ~isempty(materialDiffuseParameter) && ~isempty(pbrtMaterial.getParameter(materialDiffuseParameter))
-    if ~isempty(diffuseTexture) && ischar(diffuseTexture)
-        [pbrtTextures{end+1}, textureName] = makeImageMap(diffuseTexture);
-        pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
-    elseif ~isempty(diffuseRgb)
-        pbrtMaterial.setParameter(materialDiffuseParameter, 'rgb', diffuseRgb(1:3));
-    end
-end
-
-if ~isempty(materialSpecularParameter) && ~isempty(pbrtMaterial.getParameter(materialSpecularParameter))
-    if ~isempty(specularTexture) && ischar(specularTexture)
-        [pbrtTextures{end+1}, textureName] = makeImageMap(specularTexture);
-        pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
-    elseif ~isempty(specularRgb)
-        pbrtMaterial.setParameter(materialSpecularParameter, 'rgb', specularRgb(1:3));
-    end
+switch opacity
+    case 1
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, materialDefault.type);
+        pbrtMaterial.parameters = materialDefault.parameters;
+        
+        if ~isempty(materialDiffuseParameter) && ~isempty(pbrtMaterial.getParameter(materialDiffuseParameter))
+            if ~isempty(diffuseTexture) && ischar(diffuseTexture)
+                [pbrtTextures{end+1}, textureName] = makeImageMap(diffuseTexture);
+                pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
+            elseif ~isempty(diffuseRgb)
+                pbrtMaterial.setParameter(materialDiffuseParameter, 'rgb', diffuseRgb(1:3));
+            end
+        end
+        
+        if ~isempty(materialSpecularParameter) && ~isempty(pbrtMaterial.getParameter(materialSpecularParameter))
+            if ~isempty(specularTexture) && ischar(specularTexture)
+                [pbrtTextures{end+1}, textureName] = makeImageMap(specularTexture);
+                pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
+            elseif ~isempty(specularRgb)
+                pbrtMaterial.setParameter(materialSpecularParameter, 'rgb', specularRgb(1:3));
+            end
+        end
+        
+    otherwise
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, 'translucent');
+        % pbrtMaterial.setParameter('Kt','rgb', [opacity, opacity, opacity]);
+        
+        %pbrtMaterial.setParameter('index','float',indexOfRefraction);
+        pbrtMaterial.setParameter('reflect','rgb',[1 1 1]);
+        pbrtMaterial.setParameter('roughness','float',1);
+        pbrtMaterial.setParameter('transmit','rgb',1-[opacity, opacity, opacity]);
+        pbrtMaterial.setParameter('Kd','rgb',diffuseRgb(1:3));
+        pbrtMaterial.setParameter('Ks','rgb',specularRgb(1:3));
+        
 end
 
 %% Query a material property, return default if no good match.
