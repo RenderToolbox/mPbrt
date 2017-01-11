@@ -90,12 +90,13 @@ pbrtMaterial.parameters = materialDefault.parameters;
 
 if ~isempty(materialDiffuseParameter) && ~isempty(pbrtMaterial.getParameter(materialDiffuseParameter))
     if ~isempty(diffuseTexture) && ischar(diffuseTexture)
-        [pbrtTextures{end+1}, textureName] = makeImageMap(diffuseTexture);
+        [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(diffuseTexture,'spectrum');
         pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
     elseif ~isempty(diffuseRgb)
         pbrtMaterial.setParameter(materialDiffuseParameter, 'rgb', diffuseRgb(1:3));
     end
 end
+
 
 if ~isempty(materialSpecularParameter) && ~isempty(pbrtMaterial.getParameter(materialSpecularParameter))
     if ~isempty(specularTexture) && ischar(specularTexture)
@@ -139,42 +140,14 @@ end
 
 % Add bump map if present
 if ~isempty(bumpTexture)&& ischar(bumpTexture)
-    [pbrtTextures{end+1}, textureName] = makeImageMapFloat(bumpTexture);
+    [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(bumpTexture,'float');
     materialBumpParameter = 'bumpmap';
     pbrtMaterial.setParameter(materialBumpParameter, 'texture', textureName);
 end
 
-% Add an opacity texture if present
+% Create an opacity (i.e. mask) texture if present. This texture is later linked in
+% mPbrtImportMexximpMesh.
 if ~isempty(opacityTexture) && ischar(opacityTexture)
-    [pbrtTextures{end+1}, textureName] = makeImageMapFloat(opacityTexture);
-    % The following needs to be written in the ObjectBegin/ObjectEnd
-    % section of the mesh with this material. If it's written out here, in
-    % MakeNamedMaterial it will not be applied to the mesh. See
-    % "mPbrtImportMexximpMesh.m"
-%     materialOpacityParameter = 'alpha';
-%     pbrtMaterial.setParameter(materialOpacityParameter, 'texture', textureName);
-
+    [pbrtTextures{end+1}, ~] = mPbrtMakeImageMap(opacityTexture,'float');
 end
 
-
-%% Query a material property, return default if no good match.
-function result = queryProperties(properties, queryField, queryValue, resultField, defaultResult)
-query = {queryField, mexximpStringMatcher(queryValue)};
-[resultIndex, resultScore] = mPathQuery(properties, query);
-if 1 == resultScore
-    result = properties(resultIndex).(resultField);
-else
-    result = defaultResult;
-end
-
-%% Make an imagemap texture with a name like its image file.
-function [texture, textureName] = makeImageMap(imageFile)
-[~, textureName] = fileparts(imageFile);
-texture = MPbrtElement.texture(textureName, 'spectrum', 'imagemap');
-texture.setParameter('filename', 'string', imageFile);
-
-%% Make an imagemap texture as a float, for the opacity mask and bump map
-function [texture, textureName] = makeImageMapFloat(imageFile)
-[~, textureName] = fileparts(imageFile);
-texture = MPbrtElement.texture(textureName, 'float', 'imagemap');
-texture.setParameter('filename', 'string', imageFile);
