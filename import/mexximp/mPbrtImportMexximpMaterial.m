@@ -66,88 +66,114 @@ pbrtName = mexximpCleanName(materialName, materialIndex);
 
 %% Dig out diffuse and specular rgb and texture values.
 properties = mPathGet(scene, cat(2, material.path, {'properties'}));
-diffuseRgb = queryProperties(properties, 'key', 'diffuse', 'data', []);
-specularRgb = queryProperties(properties, 'key', 'specular', 'data', []);
-glossyRgb = queryProperties(properties, 'key', 'glossy', 'data', []);
+diffuseRgb = mPbrtQueryProperties(properties, 'key', 'diffuse', 'data', []);
+specularRgb = mPbrtQueryProperties(properties, 'key', 'specular', 'data', []);
+glossyRgb = mPbrtQueryProperties(properties, 'key', 'glossy', 'data', []);
 
-opacity = queryProperties(properties, 'key', 'opacity', 'data', []);
-indexOfRefraction = queryProperties(properties, 'key', 'refract_i', 'data', []);
+opacity = mPbrtQueryProperties(properties, 'key', 'opacity', 'data', []);
+indexOfRefraction = mPbrtQueryProperties(properties, 'key', 'refract_i', 'data', []);
+
+transparency = mPbrtQueryProperties(properties, 'key', 'transparent', 'data', []);
+transparency = 1-transparency;
 
 % emissiveRgb = queryProperties(properties, 'key', 'emissive', 'data', []);
 % shadingModel = queryProperties(properties, 'key', 'shading_model','data',0);
 
-diffuseTexture = queryProperties(properties, 'textureSemantic', 'diffuse', 'data', '');
-specularTexture = queryProperties(properties, 'textureSemantic', 'specular', 'data', '');
-glossyTexture = queryProperties(properties, 'textureSemantic', 'glossy', 'data', '');
-opacityTexture = queryProperties(properties, 'textureSemantic', 'opacity','data','');
-iorTexture = queryProperties(properties, 'textureSemantic', 'refract_i', 'data', '');
-bumpTexture = queryProperties(properties, 'textureSemantic','height','data','');
+diffuseTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'diffuse', 'data', '');
+specularTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'specular', 'data', '');
+glossyTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'glossy', 'data', '');
+opacityTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'opacity','data','');
+iorTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'refract_i', 'data', '');
+bumpTexture = mPbrtQueryProperties(properties, 'textureSemantic','height','data','');
 
 %% Build the pbrt material.
 
-pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, materialDefault.type);
-pbrtMaterial.parameters = materialDefault.parameters;
-
-if ~isempty(materialDiffuseParameter) && ~isempty(pbrtMaterial.getParameter(materialDiffuseParameter))
-    if ~isempty(diffuseTexture) && ischar(diffuseTexture)
-        [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(diffuseTexture,'spectrum');
-        pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
-    elseif ~isempty(diffuseRgb)
-        pbrtMaterial.setParameter(materialDiffuseParameter, 'rgb', diffuseRgb(1:3));
+if max(transparency(:)) == 0
+    % Opaque material
+    
+    pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, materialDefault.type);
+    pbrtMaterial.parameters = materialDefault.parameters;
+    
+    if ~isempty(materialDiffuseParameter) && ~isempty(pbrtMaterial.getParameter(materialDiffuseParameter))
+        if ~isempty(diffuseTexture) && ischar(diffuseTexture)
+            [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(diffuseTexture,'spectrum');
+            pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
+        elseif ~isempty(diffuseRgb)
+            pbrtMaterial.setParameter(materialDiffuseParameter, 'rgb', diffuseRgb(1:3));
+        end
     end
-end
-
-
-if ~isempty(materialSpecularParameter) && ~isempty(pbrtMaterial.getParameter(materialSpecularParameter))
-    if ~isempty(specularTexture) && ischar(specularTexture)
-        [pbrtTextures{end+1}, textureName] = makeImageMap(specularTexture);
-        pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
-    elseif ~isempty(specularRgb)
-        pbrtMaterial.setParameter(materialSpecularParameter, 'rgb', specularRgb(1:3));
+    
+    
+    if ~isempty(materialSpecularParameter) && ~isempty(pbrtMaterial.getParameter(materialSpecularParameter))
+        if ~isempty(specularTexture) && ischar(specularTexture)
+            [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(specularTexture,'spectrum');
+            pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
+        elseif ~isempty(specularRgb)
+            pbrtMaterial.setParameter(materialSpecularParameter, 'rgb', specularRgb(1:3));
+        end
     end
-end
-
-if ~isempty(materialGlossyParameter) && ~isempty(pbrtMaterial.getParameter(materialGlossyParameter))
-    if ~isempty(glossyTexture) && ischar(glossyTexture)
-        [pbrtTextures{end+1}, textureName] = makeImageMap(glossyTexture);
-        pbrtMaterial.setParameter(materialGlossyParameter, 'texture', textureName);
-    elseif ~isempty(glossyRgb)
-        pbrtMaterial.setParameter(materialGlossyParameter, 'rgb', glossyRgb(1:3));
+    
+    if ~isempty(materialGlossyParameter) && ~isempty(pbrtMaterial.getParameter(materialGlossyParameter))
+        if ~isempty(glossyTexture) && ischar(glossyTexture)
+            [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(glossyTexture,'spectrum');
+            pbrtMaterial.setParameter(materialGlossyParameter, 'texture', textureName);
+        elseif ~isempty(glossyRgb)
+            pbrtMaterial.setParameter(materialGlossyParameter, 'rgb', glossyRgb(1:3));
+        end
     end
-end
-
-if ~isempty(materialIorParameter) && ~isempty(pbrtMaterial.getParameter(materialIorParameter))
-    if ~isempty(iorTexture) && ischar(iorTexture)
-        [pbrtTextures{end+1}, textureName] = makeImageMap(iorTexture);
-        pbrtMaterial.setParameter(materialIorParameter, 'texture', textureName);
-    elseif ~isempty(indexOfRefraction)
-        pbrtMaterial.setParameter(materialIorParameter, 'float', indexOfRefraction);
+    
+    if ~isempty(materialIorParameter) && ~isempty(pbrtMaterial.getParameter(materialIorParameter))
+        if ~isempty(iorTexture) && ischar(iorTexture)
+            [pbrtTextures{end+1}, textureName] = mPbrtImageImageMap(iorTexture,'float');
+            pbrtMaterial.setParameter(materialIorParameter, 'texture', textureName);
+        elseif ~isempty(indexOfRefraction)
+            pbrtMaterial.setParameter(materialIorParameter, 'float', indexOfRefraction);
+        end
     end
-end
-
-if ~isempty(materialOpacityParameter) && ~isempty(pbrtMaterial.getParameter(materialOpacityParameter))
+    
+    if ~isempty(materialOpacityParameter) && ~isempty(pbrtMaterial.getParameter(materialOpacityParameter))
+        if ~isempty(opacityTexture) && ischar(opacityTexture)
+            [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(opacityTexture,'spectrum');
+            pbrtMaterial.setParameter(materialOpacityParameter, 'texture', textureName);
+        elseif ~isempty(opacity)
+            pbrtMaterial.setParameter(materialOpacityParameter, 'rgb', [opacity, opacity, opacity]);
+        end
+    end
+    
+    
+    
+    
+    
+    % Add bump map if present
+    if ~isempty(bumpTexture)&& ischar(bumpTexture)
+        [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(bumpTexture,'float');
+        materialBumpParameter = 'bumpmap';
+        pbrtMaterial.setParameter(materialBumpParameter, 'texture', textureName);
+    end
+    
+    % Create an opacity (i.e. mask) texture if present. This texture is later linked in
+    % mPbrtImportMexximpMesh.
     if ~isempty(opacityTexture) && ischar(opacityTexture)
-        [pbrtTextures{end+1}, textureName] = makeImageMap(opacityTexture);
-        pbrtMaterial.setParameter(materialOpacityParameter, 'texture', textureName);
-    elseif ~isempty(opacity)
-        pbrtMaterial.setParameter(materialOpacityParameter, 'rgb', [opacity, opacity, opacity]);
+        [pbrtTextures{end+1}, ~] = mPbrtMakeImageMap(opacityTexture,'float');
     end
+    
+else
+    % glass material
+    pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, 'glass');
+    pbrtMaterial.setParameter('Ks', 'rgb', [1 1 1]);
+    pbrtMaterial.setParameter('Kt', 'rgb', transparency);
+    pbrtMaterial.setParameter(materialIorParameter, 'float', indexOfRefraction);
+    
+    if ~isempty(materialSpecularParameter) && ~isempty(pbrtMaterial.getParameter(materialSpecularParameter))
+        if ~isempty(specularTexture) && ischar(specularTexture)
+            [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(specularTexture,'spectrum');
+            pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
+        elseif ~isempty(specularRgb)
+            pbrtMaterial.setParameter(materialSpecularParameter, 'rgb', specularRgb(1:3));
+        end
+    end
+    
+    
 end
 
-
-        
-
-
-% Add bump map if present
-if ~isempty(bumpTexture)&& ischar(bumpTexture)
-    [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(bumpTexture,'float');
-    materialBumpParameter = 'bumpmap';
-    pbrtMaterial.setParameter(materialBumpParameter, 'texture', textureName);
-end
-
-% Create an opacity (i.e. mask) texture if present. This texture is later linked in
-% mPbrtImportMexximpMesh.
-if ~isempty(opacityTexture) && ischar(opacityTexture)
-    [pbrtTextures{end+1}, ~] = mPbrtMakeImageMap(opacityTexture,'float');
-end
 
