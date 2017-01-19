@@ -77,11 +77,14 @@ classdef MPbrtContainer < MPbrtNode
             % find the first occurence of the node, if any
             
             % no trick, just compare against each nested object
-            nNested = numel(self.nested);
-            isGivenNode = false(1, nNested);
-            for nn = 1:nNested
-                isGivenNode(nn) = node == self.nested{nn};
-            end
+            % nNested = numel(self.nested);
+            % isGivenNode = false(1, nNested);
+            % for nn = 1:nNested
+            %    isGivenNode(nn) = node == self.nested{nn};
+            % end
+            
+            % Faster version
+            isGivenNode = node == self.nested;
         end
         
         function index = prepend(self, node)
