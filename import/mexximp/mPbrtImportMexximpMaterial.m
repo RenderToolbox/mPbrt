@@ -105,9 +105,6 @@ bumpTexture = mPbrtQueryProperties(properties, 'textureSemantic','height','data'
 
 %% Build the pbrt material.
 
-%if max(transparency(:)) == 0
-% Opaque material
-
 pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, materialDefault.type);
 pbrtMaterial.parameters = materialDefault.parameters;
 
@@ -153,7 +150,7 @@ end
 
 if ~isempty(materialOpacityParameter) && ~isempty(pbrtMaterial.getParameter(materialOpacityParameter))
     if ~isempty(opacityTexture) && ischar(opacityTexture)
-        [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(opacityTexture,'float');
+        [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(opacityTexture,'spectrum');
         pbrtMaterial.setParameter(materialOpacityParameter, 'texture', textureName);
     elseif ~isempty(opacity)
         pbrtMaterial.setParameter(materialOpacityParameter, 'rgb', [opacity, opacity, opacity]);
@@ -176,27 +173,11 @@ end
 
 % Create an opacity (i.e. mask) texture if present. This texture is later linked in
 % mPbrtImportMexximpMesh.
+% We export opacity maps both as floats and spectrum because the two representations are used
+% for textures (spectrum) and meshes (float).
 if ~isempty(opacityTexture) && ischar(opacityTexture)
+    [pbrtTextures{end+1}, ~] = mPbrtMakeImageMap(opacityTexture,'spectrum');
     [pbrtTextures{end+1}, ~] = mPbrtMakeImageMap(opacityTexture,'float');
 end
-%{
-else
-    % glass material
-    pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, 'glass');
-    pbrtMaterial.setParameter('Ks', 'rgb', [1 1 1]);
-    pbrtMaterial.setParameter('Kt', 'rgb', transparency);
-    pbrtMaterial.setParameter(materialIorParameter, 'float', indexOfRefraction);
-    
-    if ~isempty(materialSpecularParameter) && ~isempty(pbrtMaterial.getParameter(materialSpecularParameter))
-        if ~isempty(specularTexture) && ischar(specularTexture)
-            [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(specularTexture,'spectrum');
-            pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
-        elseif ~isempty(specularRgb)
-            pbrtMaterial.setParameter(materialSpecularParameter, 'rgb', specularRgb(1:3));
-        end
-    end
-    
-    
-end
-%}
+
 
