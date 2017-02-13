@@ -117,6 +117,22 @@ pbrtNode.append(pbrtMaterial);
 pbrtInclude = MPbrtElement('Include', 'value', includeRelativePath);
 pbrtNode.append(pbrtInclude);
 
+
+%% Check for opacity textures
+opacityTexture = mPbrtQueryProperties(materialData.properties,'textureSemantic','opacity','data','');
+if(~isempty(opacityTexture)) 
+    
+    % Hack to get texture name. We use mPbrtMakeImageMap in
+    % mPbrtimportMexximpMaterial in order to create the named texture.
+    % We cannot create the texture here, since it cannot within the Object
+    % instance (pbrtNode container).
+   [~, textureName] = mPbrtMakeImageMap(opacityTexture,'float');
+   
+   % Attach to mesh
+   pbrtOpacity = MPbrtElement('"texture alpha"','value',textureName);
+   pbrtNode.append(pbrtOpacity);
+end
+
 %% If necessary, write the include file.
 if 2 == exist(includeFile, 'file') && ~rewriteMeshData
     % use an existing Include file
