@@ -133,8 +133,9 @@ if(~isempty(opacityTexture))
    pbrtNode.append(pbrtOpacity);
 end
 
+
 %% If necessary, write the include file.
-if 2 == exist(includeFile, 'file') && ~rewriteMeshData
+if ~rewriteMeshData && 2 == exist(includeFile, 'file')
     % use an existing Include file
     return;
 end
@@ -144,7 +145,4 @@ if 7 ~= exist(includeFolder, 'dir')
     mkdir(includeFolder);
 end
 
-% make a temp scene with just the Shape in it
-tempScene = MPbrtScene();
-tempScene.overall.append(pbrtShape);
-tempScene.printToFile(includeFile);
+pbrtShape.printToFile(includeFile);
