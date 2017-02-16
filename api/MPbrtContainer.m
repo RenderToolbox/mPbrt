@@ -23,26 +23,18 @@ classdef MPbrtContainer < MPbrtNode
             %           'comment', bar, ...
             %           'indent', '    ')
             
-            parser = inputParser();
-            parser.addRequired('identifier', @ischar);
-            props = properties('MPbrtContainer');
-            for pp = 1:numel(props)
-                prop = props{pp};
-                if strcmp('identifier', prop)
-                    continue;
-                end
-                parser.addParameter(prop, '');
-            end
-            parser.parse(identifier, varargin{:});
+            % would like to use inputParser() to check that identifier is a
+            % string, and that varargin contains actual properties of this
+            % class.  But this can be a performance bottleneck.  So, for
+            % performance reasons, let's let er rip!
             
-            % assign properties from the parser, including idenentifier
-            fields = fieldnames(parser.Results);
-            for ff = 1:numel(fields)
-                field = fields{ff};
-                if ismember(field, parser.UsingDefaults)
-                    continue;
-                end
-                self.(field) = parser.Results.(field);
+            self.identifier = identifier;
+            
+            nVarargin = numel(varargin);
+            for vv = 1:2:nVarargin
+                fieldName = varargin{vv};
+                value = varargin{vv+1};
+                self.(fieldName) = value;
             end
         end
         
@@ -117,7 +109,11 @@ classdef MPbrtContainer < MPbrtNode
             end
             
             isGivenNode = self.nodePosition(node);
-            self.nested = cat(2, self.nested(~isGivenNode), {node});
+            if any(isGivenNode)
+                self.nested = cat(2, self.nested(~isGivenNode), {node});
+            else
+                self.nested{end+1} = node;
+            end
             index = numel(self.nested);
         end
         

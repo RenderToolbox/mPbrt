@@ -43,26 +43,18 @@ classdef MPbrtElement < MPbrtNode
             %           'comment', bar, ...
             %           'indent', '    ')
             
-            parser = inputParser();
-            parser.addRequired('identifier', @ischar);
-            props = properties('MPbrtElement');
-            for pp = 1:numel(props)
-                prop = props{pp};
-                if strcmp('identifier', prop)
-                    continue;
-                end
-                parser.addParameter(prop, '');
-            end
-            parser.parse(identifier, varargin{:});
+            % would like to use inputParser() to check that identifier is a
+            % string, and that varargin contains actual properties of this
+            % class.  But this can be a performance bottleneck.  So, for
+            % performance reasons, let's let er rip!
             
-            % assign properties from the parser, including idenentifier
-            fields = fieldnames(parser.Results);
-            for ff = 1:numel(fields)
-                field = fields{ff};
-                if ismember(field, parser.UsingDefaults)
-                    continue;
-                end
-                self.(field) = parser.Results.(field);
+            self.identifier = identifier;
+            
+            nVarargin = numel(varargin);
+            for vv = 1:2:nVarargin
+                fieldName = varargin{vv};
+                value = varargin{vv+1};
+                self.(fieldName) = value;
             end
         end
         
@@ -83,6 +75,40 @@ classdef MPbrtElement < MPbrtNode
                 fprintf(fid, '%s"%s %s" ', paramIndent, p.type, p.name);
                 self.printValue(fid, p.value, p.type);
                 fprintf(fid, '\n');
+            end
+        end
+        
+        function printToFile(self, outputFile)
+            % Write this element all by itself to the given file.
+            %
+            %   This is good for producing PBRT "Include" files.
+            %
+            %   outputFile may be a string file path or a file descriptor.
+            %
+            %   Throws an error if there was a problem.
+            
+            fid = [];
+            try
+                if isnumeric(outputFile)
+                    fid = outputFile;
+                else
+                    fid = fopen(outputFile, 'w');
+                end
+                
+                self.print(fid, '');
+                
+            catch err
+                % close the file, even if there's an error
+                %   too bad we can't have a try/catch/finally block!
+                if ~isempty(fid) && fid > 2
+                    fclose(fid);
+                end
+                rethrow(err);
+            end
+            
+            % close the file on success
+            if ~isempty(fid) && fid > 2
+                fclose(fid);
             end
         end
         
