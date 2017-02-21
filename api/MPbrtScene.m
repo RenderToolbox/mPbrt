@@ -1,4 +1,3 @@
-
 classdef MPbrtScene < handle
     % Top-level container for a PBRT scene.
     %   The scene contains various elements at the "overall" level and

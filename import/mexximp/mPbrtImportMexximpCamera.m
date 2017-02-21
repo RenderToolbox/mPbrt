@@ -86,3 +86,7 @@ pbrtNode = MPbrtContainer('', 'indent', '');
 pbrtNode.append(pbrtInternalLookAt);
 pbrtNode.append(pbrtSceneTransform);
 pbrtNode.append(pbrtCamera);
+
+%% Record the Mexximp element that produced this node.
+pbrtNode.extra = camera;
+

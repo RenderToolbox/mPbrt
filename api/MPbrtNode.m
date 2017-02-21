@@ -23,6 +23,9 @@ classdef MPbrtNode < handle
         
         % Format specifier for parsing numeric values.
         scanFormat = '%f';
+        
+        % any extra data to associate with this node
+        extra;
     end
     
     methods (Abstract)

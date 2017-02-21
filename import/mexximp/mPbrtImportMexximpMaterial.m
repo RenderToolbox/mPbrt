@@ -180,4 +180,6 @@ if ~isempty(opacityTexture) && ischar(opacityTexture)
     [pbrtTextures{end+1}, ~] = mPbrtMakeImageMap(opacityTexture,'float');
 end
 
+%% Record the Mexximp element that produced this node.
+pbrtMaterial.extra = material;
 
