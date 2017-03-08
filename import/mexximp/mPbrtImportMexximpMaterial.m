@@ -76,8 +76,8 @@ materialDiffuseParameter = 'Kd';
 materialSpecularParameter = 'Kr';
 materialGlossyParameter = 'Ks';
 materialIorParameter = 'index';
-materialOpacityParameter = 'opacity';
-materialTransmissivityParameter = 'Kt';
+% materialOpacityParameter = 'opacity';
+materialTransmissivityParameter = 'opacity';
 
 pbrtTextures = {};
 
@@ -99,8 +99,7 @@ glossyRgb = mPbrtQueryProperties(properties, 'key', 'glossy', 'data', []);
 opacity = mPbrtQueryProperties(properties, 'key', 'opacity', 'data', []);
 indexOfRefraction = mPbrtQueryProperties(properties, 'key', 'refract_i', 'data', []);
 
-transmissiveRgb = mPbrtQueryProperties(properties, 'key', 'transparent', 'data', []);
-transmissiveRgb = 1-transmissiveRgb;
+transmissiveRgb = mPbrtQueryProperties(properties, 'key', 'transparent', 'data', [1, 1, 1]);
 
 shininess = mPbrtQueryProperties(properties, 'key', 'shininess', 'data', []);
 
@@ -121,42 +120,10 @@ bumpTexture = mPbrtQueryProperties(properties, 'textureSemantic','height','data'
 %% Build the pbrt material.
 
 if isGlass
-    
-    pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'glass');
-    pbrtMaterial.parameters = materialGlass.parameters;
-    
-    if ~isempty(materialSpecularParameter) && ~isempty(pbrtMaterial.getParameter(materialSpecularParameter))
-        if ~isempty(specularTexture) && ischar(specularTexture)
-            [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(specularTexture,'spectrum');
-            pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
-        elseif ~isempty(specularRgb)
-            
-            if max(specularRgb > 1) 
-                specularRgb = max(specularRgb - 1,0);
-            end
-            
-            pbrtMaterial.setParameter(materialSpecularParameter, 'rgb', specularRgb(1:3));
-        end
-    end
-    
-    % Transmissivity
-    if ~isempty(materialTransmissivityParameter) && ~isempty(pbrtMaterial.getParameter(materialTransmissivityParameter))
-        if ~isempty(transmissiveTexture) && ischar(transmissiveTexture)
-            [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(transmissiveTexture,'spectrum');
-            pbrtMaterial.setParameter(materialTransmissivityParameter, 'texture', textureName);
-        elseif ~isempty(transmissiveRgb)
-            pbrtMaterial.setParameter(materialTransmissivityParameter, 'rgb', transmissiveRgb(1:3).*diffuseRgb(1:3));
-        end
-    end
-    
-    % Index of refraction
-    if ~isempty(materialIorParameter)
-        pbrtMaterial.setParameter(materialIorParameter,'rgb', indexOfRefraction);
-    end
-    
-    
-else
-    
+    fprintf('Glass\n');
+end
+
+
     pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, materialDefault.type);
     pbrtMaterial.parameters = materialDefault.parameters;
     
@@ -200,12 +167,27 @@ end
         end
     end
     
+    %{ 
+    % Opacity is a single scalar defining how much of the backround goes
+    through the object
     if ~isempty(materialOpacityParameter) && ~isempty(pbrtMaterial.getParameter(materialOpacityParameter))
         if ~isempty(opacityTexture) && ischar(opacityTexture)
             [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(opacityTexture,'spectrum');
             pbrtMaterial.setParameter(materialOpacityParameter, 'texture', textureName);
         elseif ~isempty(opacity)
             pbrtMaterial.setParameter(materialOpacityParameter, 'rgb', [opacity, opacity, opacity]);
+        end
+    end
+    %}
+    
+    % Transmissivity (or more correctly translucency: we are not simulating
+    % effects due to differences in indices of refraction)
+    if ~isempty(materialTransmissivityParameter) && ~isempty(pbrtMaterial.getParameter(materialTransmissivityParameter))
+        if ~isempty(transmissiveTexture) && ischar(transmissiveTexture)
+            [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(transmissiveTexture,'spectrum');
+            pbrtMaterial.setParameter(materialTransmissivityParameter, 'texture', textureName);
+        elseif ~isempty(transmissiveRgb)
+            pbrtMaterial.setParameter(materialTransmissivityParameter, 'rgb', transmissiveRgb(1:3));
         end
     end
     
@@ -232,7 +214,6 @@ end
         [pbrtTextures{end+1}, ~] = mPbrtMakeImageMap(opacityTexture,'float');
     end
     
-end
 
 %% Record the Mexximp element that produced this node.
 pbrtMaterial.extra = material;
