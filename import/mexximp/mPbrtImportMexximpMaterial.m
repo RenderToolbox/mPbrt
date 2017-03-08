@@ -131,10 +131,7 @@ if isGlass
             pbrtMaterial.setParameter(materialDiffuseParameter, 'texture', textureName);
         elseif ~isempty(specularRgb)
             
-            if max(specularRgb > 1) 
-                specularRgb = max(specularRgb - 1,0);
-            end
-            
+            specularRgb = specularRgb - floor(specularRgb);
             pbrtMaterial.setParameter(materialSpecularParameter, 'rgb', specularRgb(1:3));
         end
     end
