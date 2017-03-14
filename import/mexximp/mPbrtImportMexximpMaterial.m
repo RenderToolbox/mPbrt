@@ -103,6 +103,7 @@ indexOfRefraction = mPbrtQueryProperties(properties, 'key', 'refract_i', 'data',
 transmissiveRgb = mPbrtQueryProperties(properties, 'key', 'transparent', 'data', [1, 1, 1]);
 % transmissiveRgb = 1 - transmissiveRgb;
 
+
 shininess = mPbrtQueryProperties(properties, 'key', 'shininess', 'data', []);
 
 % emissiveRgb = queryProperties(properties, 'key', 'emissive', 'data', []);
