@@ -102,6 +102,7 @@ glossyTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'glossy', 'd
 opacityTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'opacity','data','');
 iorTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'refract_i', 'data', '');
 bumpTexture = mPbrtQueryProperties(properties, 'textureSemantic','height','data','');
+normalTexture = mPbrtQueryProperties(properties, 'textureSemantic','normals','data','');
 
 %% Build the pbrt material.
 
@@ -169,6 +170,13 @@ if ~isempty(bumpTexture)&& ischar(bumpTexture)
     [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(bumpTexture,'float');
     materialBumpParameter = 'bumpmap';
     pbrtMaterial.setParameter(materialBumpParameter, 'texture', textureName);
+end
+
+% Add normal map if present
+if ~isempty(normalTexture)&& ischar(normalTexture)
+    [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(normalTexture,'spectrum');
+    materialNormalParameter = 'normalmap';
+    pbrtMaterial.setParameter(materialNormalParameter, 'texture', textureName);
 end
 
 % Create an opacity (i.e. mask) texture if present. This texture is later linked in
