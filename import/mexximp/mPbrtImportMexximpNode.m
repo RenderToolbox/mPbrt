@@ -46,5 +46,8 @@ for oo = 1:nObjects
     objectInstance = MPbrtElement('ObjectInstance', 'value', meshName);
     attribute.append(objectInstance);
     
+    % mexximp element that led to this attribute
+    attribute.extra = node;
+    
     pbrtNodes{oo} = attribute;
 end

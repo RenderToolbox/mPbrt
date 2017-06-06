@@ -146,3 +146,6 @@ if 7 ~= exist(includeFolder, 'dir')
 end
 
 pbrtShape.printToFile(includeFile);
+
+%% Record the Mexximp element that produced this node.
+pbrtNode.extra = mesh;

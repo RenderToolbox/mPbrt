@@ -74,3 +74,8 @@ switch internal.type
         pbrtLight.setParameter('conedeltaangle', 'float', deltaAngle);
         
 end
+
+
+%% Record the Mexximp element that produced this node.
+pbrtNode.extra = light;
+

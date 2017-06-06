@@ -89,7 +89,7 @@ opacity = mPbrtQueryProperties(properties, 'key', 'opacity', 'data', []);
 indexOfRefraction = mPbrtQueryProperties(properties, 'key', 'refract_i', 'data', []);
 
 transparency = mPbrtQueryProperties(properties, 'key', 'transparent', 'data', []);
-transparency = 1-transparency;
+%transparency = 1-transparency;
 
 shininess = mPbrtQueryProperties(properties, 'key', 'shininess', 'data', []);
 
@@ -154,7 +154,7 @@ if ~isempty(materialOpacityParameter) && ~isempty(pbrtMaterial.getParameter(mate
         [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(opacityTexture,'spectrum');
         pbrtMaterial.setParameter(materialOpacityParameter, 'texture', textureName);
     elseif ~isempty(opacity)
-        pbrtMaterial.setParameter(materialOpacityParameter, 'rgb', [opacity, opacity, opacity]);
+        pbrtMaterial.setParameter(materialOpacityParameter, 'rgb', transparency);
     end
 end
 
@@ -188,4 +188,6 @@ if ~isempty(opacityTexture) && ischar(opacityTexture)
     [pbrtTextures{end+1}, ~] = mPbrtMakeImageMap(opacityTexture,'float');
 end
 
+%% Record the Mexximp element that produced this node.
+pbrtMaterial.extra = material;
 
