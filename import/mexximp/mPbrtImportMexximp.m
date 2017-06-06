@@ -49,7 +49,9 @@ for mm = materialInds
     for tt = 1:numel(pbrtTextures)
         pbrtScene.world.append(pbrtTextures{tt});
     end
-    pbrtScene.world.append(pbrtMaterial);
+    for tt=1:numel(pbrtMaterial)
+        pbrtScene.world.append(pbrtMaterial{tt});
+    end
 end
 
 %% Lights and world transformations with AttributeBegin/End.
