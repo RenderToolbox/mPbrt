@@ -67,6 +67,7 @@ materialDefault.setParameter('index','float',1.5);
 materialDefault.setParameter('opacity', 'spectrum', '300:1 800:1');
 %}
 
+%{
 materialName = material.name;
 
 materialIndex = material.path{end};
@@ -74,38 +75,19 @@ pbrtName = mexximpCleanName(materialName, materialIndex);
 
 pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'mix');
 pbrtTextures = {};
-
+%}
 %% Dig out diffuse and specular rgb and texture values.
 properties = mPathGet(parser.Results.scene, cat(2, parser.Results.material.path, {'properties'}));
-
+%{
 opacityTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'opacity','data','');
 opacity = mPbrtQueryProperties(properties, 'key', 'opacity', 'data', 1);
-
+%}
 
 %% Build the pbrt material.
 
 
-[opaqueMaterial, opaqueTextures] = importNonTransparentMaterial(parser.Results.material,properties);
+[pbrtMaterial, pbrtTextures] = importNonTransparentMaterial(parser.Results.material,properties);
 
-%{
-[transparentMaterial, transparentTextures] = importTransparentMaterial(parser.Results.material,properties);
-
-if ~isempty(opacityTexture) && ischar(opacityTexture)
-    [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(opacityTexture,'spectrum');
-    pbrtMaterial.setParameter('amount', 'texture', textureName);
-elseif ~isempty(opacity)
-    pbrtMaterial.setParameter('amount', 'rgb ', opacity);
-end
-
-pbrtMaterial.setParameter('namedmaterial1','string',opaqueMaterial{end}.name);
-pbrtMaterial.setParameter('namedmaterial2','string',transparentMaterial{end}.name);
-%}
-
-%pbrtMaterial = {opaqueMaterial{:}, transparentMaterial{:}, pbrtMaterial};
-%pbrtTextures = {opaqueTextures{:}, transparentTextures{:}, pbrtTextures};
-
-pbrtMaterial = opaqueMaterial;
-pbrtTextures = opaqueTextures;
 
 end
 
@@ -115,9 +97,6 @@ materialURoughnessParameter = 'uroughness';
 materialVRoughnessParameter = 'vroughness';
 
 materialAmountParameter = 'amount';
-
-materialEtaParameter = 'eta';
-materialKParameter = 'k';
 
 materialRoughnessParameter = 'roughness';
 materialDiffuseParameter = 'Kd';
@@ -152,6 +131,8 @@ glossyTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'glossy', 'd
 opacityTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'opacity','data','');
 iorTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'refract_i', 'data', '');
 bumpTexture = mPbrtQueryProperties(properties, 'textureSemantic','height','data','');
+normalTexture = mPbrtQueryProperties(properties, 'textureSemantic','normals','data','');
+
 
 metallicTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'metallic','data','');
 roughnessTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'roughness','data','');
@@ -167,15 +148,13 @@ pbrtName = mexximpCleanName(materialName, materialIndex);
 
 % The basic material is a 'Substrate' material
 
-materialA = MPbrtElement.makeNamedMaterial(pbrtNameA,'uber');
+materialA = MPbrtElement.makeNamedMaterial(pbrtNameA,'substrate');
 materialA.setParameter('Kd', 'spectrum', '300:1 800:1');
 materialA.setParameter('Ks', 'spectrum', '300:0.25 800:0.25');
-materialA.setParameter('roughness','float',0.1);
-materialA.setParameter('opacity','rgb',[1 1 1]);
-% materialA.setParameter('uroughness','float',0.1);
-% materialA.setParameter('vroughness','float',0.1);
+materialA.setParameter('uroughness','float',0.1);
+materialA.setParameter('vroughness','float',0.1);
 
-pbrtTextures = {};
+pbrtTextures = {}; materialB = {};
 
 if ~isempty(materialDiffuseParameter) && ~isempty(materialA.getParameter(materialDiffuseParameter))
     if ~isempty(diffuseTexture) && ischar(diffuseTexture)
@@ -186,27 +165,7 @@ if ~isempty(materialDiffuseParameter) && ~isempty(materialA.getParameter(materia
     end
 end
 
-if ~isempty(materialRoughnessParameter) && ~isempty(materialA.getParameter(materialRoughnessParameter))
-    if ~isempty(roughnessTexture) && ischar(roughnessTexture)
-        [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(roughnessTexture,'float');
-        materialA.setParameter(materialRoughnessParameter, 'texture', textureName);
-    elseif ~isempty(roughness)
-        materialA.setParameter(materialRoughnessParameter, 'float', roughness);
-    end
-end
 
-%{
-if ~isempty(materialOpacityParameter) && ~isempty(materialA.getParameter(materialOpacityParameter))
-    if ~isempty(opacityTexture) && ischar(opacityTexture)
-        [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(opacityTexture,'spectrum');
-        materialA.setParameter(materialOpacityParameter, 'texture', textureName);
-    elseif ~isempty(opacity)
-        materialA.setParameter(materialOpacityParameter, 'rgb', opacity);
-    end
-end
-%}
-
-%{
 if ~isempty(materialURoughnessParameter) && ~isempty(materialA.getParameter(materialURoughnessParameter))
     if ~isempty(roughnessTexture) && ischar(roughnessTexture)
         [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(roughnessTexture,'float');
@@ -224,13 +183,25 @@ if ~isempty(materialVRoughnessParameter) && ~isempty(materialA.getParameter(mate
         materialA.setParameter(materialVRoughnessParameter, 'float', roughness);
     end
 end
-%}
+
+% Add bump map if present
+if ~isempty(bumpTexture)&& ischar(bumpTexture)
+    [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(bumpTexture,'float');
+    materialBumpParameter = 'bumpmap';
+    materialA.setParameter(materialBumpParameter, 'texture', textureName);
+end
+
+% Add normal map if present
+if ~isempty(normalTexture)&& ischar(normalTexture)
+    [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(normalTexture,'spectrum');
+    materialNormalParameter = 'normalmap';
+    materialA.setParameter(materialNormalParameter, 'texture', textureName);
+end
 
 if isempty(metallicTexture) && isempty(metallic)
     % We have the Albedo+spectular workflow
     % We don't use a metal to simulate shine.
-    materialA.value = {pbrtName, 'string type'};
-    materialA.name = [pbrtName];
+   
     
     if ~isempty(materialGlossyParameter) && ~isempty(materialA.getParameter(materialGlossyParameter))
         if ~isempty(specularTexture) && ischar(specularTexture) %isempty(glossyTexture) && ischar(glossyTexture)
@@ -241,12 +212,11 @@ if isempty(metallicTexture) && isempty(metallic)
         end
     end
     
-    materialA.extra = material;
-    pbrtMaterial = {materialA};
-
-    return;
+    metallic = [0 0 0];
+    metallicTexture = [];
+    
 end
-
+    
 %% Otherwise we are in the albedo+metalness workflow
 
 % The other material is a 'Metal' material
@@ -274,12 +244,27 @@ if ~isempty(materialRoughnessParameter) && ~isempty(materialB.getParameter(mater
     end
 end
 
+% Add bump map if present
+if ~isempty(bumpTexture)&& ischar(bumpTexture)
+    [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(bumpTexture,'float');
+    materialBumpParameter = 'bumpmap';
+    materialB.setParameter(materialBumpParameter, 'texture', textureName);
+end
 
+% Add normal map if present
+if ~isempty(normalTexture)&& ischar(normalTexture)
+    [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(normalTexture,'spectrum');
+    materialNormalParameter = 'normalmap';
+    materialB.setParameter(materialNormalParameter, 'texture', textureName);
+end
+
+    
 % Finally we mix the two together
-pbrtMaterial = MPbrtElement.makeNamedMaterial([pbrtName],'mix');
+pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'mix');
 pbrtMaterial.setParameter('amount','rgb',[0 0 0]);
 pbrtMaterial.setParameter('namedmaterial1','string',pbrtNameB);
 pbrtMaterial.setParameter('namedmaterial2','string',pbrtNameA);
+pbrtMaterial.setParameter('opacity','rgb',[1 1 1]);
 
 
 if ~isempty(materialAmountParameter) && ~isempty(pbrtMaterial.getParameter(materialAmountParameter))
@@ -287,17 +272,28 @@ if ~isempty(materialAmountParameter) && ~isempty(pbrtMaterial.getParameter(mater
         [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(metallicTexture,'spectrum');
         pbrtMaterial.setParameter(materialAmountParameter, 'texture', textureName);
     elseif ~isempty(metallic)
-        pbrtMaterial.setParameter(materialAmountParameter, 'float', metallic);
+        pbrtMaterial.setParameter(materialAmountParameter, 'rgb', metallic);
     end
 end
 
 
-% Add bump map if present
-if ~isempty(bumpTexture)&& ischar(bumpTexture)
-    [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(bumpTexture,'float');
-    materialBumpParameter = 'bumpmap';
-    pbrtMaterial.setParameter(materialBumpParameter, 'texture', textureName);
+if ~isempty(materialOpacityParameter) && ~isempty(pbrtMaterial.getParameter(materialOpacityParameter))
+    if ~isempty(opacityTexture) && ischar(opacityTexture)
+        [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(opacityTexture,'spectrum');
+        pbrtMaterial.setParameter(materialOpacityParameter, 'texture', textureName);
+        
+        % We also add a 'float' texture used by alpha parameter in the
+        % mesh definition
+        [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(opacityTexture,'float');
+    elseif ~isempty(opacity)
+        pbrtMaterial.setParameter(materialOpacityParameter, 'rgb', [opacity opacity opacity]);
+    end
 end
+    
+
+
+
+
 
 %{
 % Create an opacity (i.e. mask) texture if present. This texture is later linked in
@@ -311,8 +307,6 @@ end
 %}
 
 %% Record the Mexximp element that produced this node.
-materialA.extra = material;
-materialB.extra = material;
 pbrtMaterial.extra = material;
 
 pbrtMaterial = {materialA, materialB, pbrtMaterial};
