@@ -88,7 +88,7 @@ glossyRgb = mPbrtQueryProperties(properties, 'key', 'glossy', 'data', []);
 opacity = mPbrtQueryProperties(properties, 'key', 'opacity', 'data', []);
 indexOfRefraction = mPbrtQueryProperties(properties, 'key', 'refract_i', 'data', []);
 
-transparency = mPbrtQueryProperties(properties, 'key', 'transparent', 'data', []);
+transparency = mPbrtQueryProperties(properties, 'key', 'transparent', 'data', [1 1 1]);
 %transparency = 1-transparency;
 
 shininess = mPbrtQueryProperties(properties, 'key', 'shininess', 'data', []);
