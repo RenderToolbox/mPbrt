@@ -134,9 +134,21 @@ if(~isempty(opacityTexture))
 end
 
 
+% if ~rewriteMeshData && skipMeshFileCheck
+%    return;
+% end
+
 %% If necessary, write the include file.
-if ~rewriteMeshData && 2 == exist(includeFile, 'file')
-    % use an existing Include file
+% if ~rewriteMeshData && 2 == exist(includeFile, 'file')
+%    % use an existing Include file
+%    return;
+% end
+
+% The fopen check is much faster than exist call.
+% A file can't be opened for reading if it does not exist.
+fid = fopen(includeFile,'r');
+if ~rewriteMeshData && (fid ~= -1)
+    fclose(fid);
     return;
 end
 
