@@ -94,7 +94,7 @@ transparency = mPbrtQueryProperties(properties, 'key', 'transparent', 'data', [1
 shininess = mPbrtQueryProperties(properties, 'key', 'shininess', 'data', []);
 
 % emissiveRgb = queryProperties(properties, 'key', 'emissive', 'data', []);
-% shadingModel = queryProperties(properties, 'key', 'shading_model','data',0);
+shadingModel = mPbrtQueryProperties(properties, 'key', 'shading_model','data',0);
 
 diffuseTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'diffuse', 'data', '');
 specularTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'specular', 'data', '');
@@ -106,7 +106,34 @@ normalTexture = mPbrtQueryProperties(properties, 'textureSemantic','normals','da
 
 %% Build the pbrt material.
 
-pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, materialDefault.type);
+switch shadingModel
+    case 21 % Glass
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'glass');
+    case 22 % Kd subsurface
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'kdsubsurface');
+    case 23
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'matte');
+    case 24
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'measured');
+    case 25
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'metal');
+    case 26
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'mirror');
+    case 27
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'mix');
+    case 28
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'plastic');
+    case 29
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'shinymetal');
+    case 30
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'substrate');
+    case 31
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'subsurface');
+    case 32
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName,'translucent');
+    otherwise
+        pbrtMaterial = MPbrtElement.makeNamedMaterial(pbrtName, materialDefault.type);
+end
 pbrtMaterial.parameters = materialDefault.parameters;
 
 if ~isempty(materialDiffuseParameter) && ~isempty(pbrtMaterial.getParameter(materialDiffuseParameter))
@@ -160,7 +187,7 @@ end
 
 % Roughness in PBRT is 1/shininess from OBJ/MTL file
 if ~isempty(shininess)
-    pbrtMaterial.setParameter('roughness', 'float', 1/shininess);
+    pbrtMaterial.setParameter('roughness', 'float', 1/double(shininess));
 end
 
 
@@ -190,4 +217,12 @@ end
 
 %% Record the Mexximp element that produced this node.
 pbrtMaterial.extra = material;
+
+
+end
+
+
+
+
+
 
