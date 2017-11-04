@@ -62,6 +62,7 @@ materialDefault = MPbrtElement.makeNamedMaterial('','uber');
 materialDefault.setParameter('Kd', 'spectrum', '300:1 800:1');
 materialDefault.setParameter('Ks', 'spectrum', '300:0 800:0');
 materialDefault.setParameter('Kr', 'spectrum', '300:0 800:0');
+materialDefault.setParameter('Kt', 'spectrum', '300:0 800:0');
 materialDefault.setParameter('roughness','float',0.1);
 materialDefault.setParameter('index','float',1.5);
 materialDefault.setParameter('opacity', 'spectrum', '300:1 800:1');
@@ -69,7 +70,8 @@ materialDiffuseParameter = 'Kd';
 materialSpecularParameter = 'Kr';
 materialGlossyParameter = 'Ks';
 materialIorParameter = 'index';
-materialOpacityParameter = 'opacity';
+materialTransparencyParameter = 'Kt';
+materialOpacityParameter = 'd';
 
 pbrtTextures = {};
 
@@ -100,6 +102,7 @@ diffuseTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'diffuse', 
 specularTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'specular', 'data', '');
 glossyTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'glossy', 'data', '');
 opacityTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'opacity','data','');
+transparencyTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'transparent','data','');
 iorTexture = mPbrtQueryProperties(properties, 'textureSemantic', 'refract_i', 'data', '');
 bumpTexture = mPbrtQueryProperties(properties, 'textureSemantic','height','data','');
 normalTexture = mPbrtQueryProperties(properties, 'textureSemantic','normals','data','');
@@ -176,12 +179,21 @@ if ~isempty(materialIorParameter) && ~isempty(pbrtMaterial.getParameter(material
     end
 end
 
+if ~isempty(materialTransparencyParameter) && ~isempty(pbrtMaterial.getParameter(materialTransparencyParameter))
+    if ~isempty(transparencyTexture) && ischar(transparencyTexture)
+        [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(transparencyTexture,'spectrum');
+        pbrtMaterial.setParameter(materialTransparencyParameter, 'texture', textureName);
+    elseif ~isempty(transparency)
+        pbrtMaterial.setParameter(materialTransparencyParameter, 'rgb', transparency);
+    end
+end
+
 if ~isempty(materialOpacityParameter) && ~isempty(pbrtMaterial.getParameter(materialOpacityParameter))
     if ~isempty(opacityTexture) && ischar(opacityTexture)
         [pbrtTextures{end+1}, textureName] = mPbrtMakeImageMap(opacityTexture,'spectrum');
         pbrtMaterial.setParameter(materialOpacityParameter, 'texture', textureName);
     elseif ~isempty(opacity)
-        pbrtMaterial.setParameter(materialOpacityParameter, 'rgb', transparency);
+        pbrtMaterial.setParameter(materialOpacityParameter, 'rgb', opacity);
     end
 end
 
